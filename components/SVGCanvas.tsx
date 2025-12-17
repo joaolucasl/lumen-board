@@ -13,6 +13,7 @@ interface SVGCanvasProps {
   onSelect: (ids: string[]) => void;
   customComponents: Record<string, React.FC<any>>;
   snapToGrid?: boolean;
+  onToolChange?: (tool: Tool) => void;
 }
 
 const SVGCanvas: React.FC<SVGCanvasProps> = ({ 
@@ -22,17 +23,24 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   onUpdateScene, 
   onSelect,
   customComponents,
-  snapToGrid
+  snapToGrid,
+  onToolChange
 }) => {
   const { view, elements, connections } = scene;
   const svgRef = useRef<SVGSVGElement>(null);
   
   // Drag states
   const [dragState, setDragState] = useState<{
-    type: 'pan' | 'element' | 'create' | 'connect';
+    type: 'pan' | 'element' | 'create';
     startPos: { x: number; y: number };
     initialElements?: Record<string, CanvasElement>;
     targetId?: string;
+  } | null>(null);
+
+  // Connection tool state (click-based, not drag-based)
+  const [pendingConnection, setPendingConnection] = useState<{
+    sourceId: string;
+    currentPos: { x: number; y: number };
   } | null>(null);
 
   const screenToWorld = useCallback((clientX: number, clientY: number) => {
@@ -85,8 +93,30 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
       setDragState({ type: 'create', startPos: worldPos, targetId: id });
     } else if (activeTool === 'connection') {
       if (elementId) {
-        setDragState({ type: 'connect', startPos: worldPos, targetId: elementId });
+        if (pendingConnection) {
+          // Second click: complete the connection
+          if (elementId !== pendingConnection.sourceId) {
+            const id = `conn_${Date.now()}`;
+            onUpdateScene(s => ({
+              ...s,
+              connections: [...s.connections, {
+                id,
+                sourceId: pendingConnection.sourceId,
+                targetId: elementId,
+                style: { strokeColor: '#000000', width: 2, curvature: 0.5 }
+              }]
+            }));
+          }
+          setPendingConnection(null);
+        } else {
+          // First click: start the connection
+          setPendingConnection({ sourceId: elementId, currentPos: worldPos });
+        }
+      } else {
+        // Clicked on empty space: cancel pending connection
+        setPendingConnection(null);
       }
+      return; // Don't capture pointer for connection tool
     } else if (activeTool === 'eraser' && elementId) {
       onUpdateScene(s => {
         const newElements = { ...s.elements };
@@ -103,6 +133,12 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
+    // Update pending connection position
+    if (pendingConnection) {
+      const worldPos = screenToWorld(e.clientX, e.clientY);
+      setPendingConnection({ ...pendingConnection, currentPos: worldPos });
+    }
+
     if (!dragState) return;
 
     if (dragState.type === 'pan') {
@@ -149,22 +185,15 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    if (dragState?.type === 'connect' && dragState.targetId) {
-      const targetId = (e.target as SVGElement).closest('[data-element-id]')?.getAttribute('data-element-id');
-      if (targetId && targetId !== dragState.targetId) {
-        const id = `conn_${Date.now()}`;
-        onUpdateScene(s => ({
-          ...s,
-          connections: [...s.connections, {
-            id,
-            sourceId: dragState.targetId!,
-            targetId,
-            style: { strokeColor: '#000000', width: 2, curvature: 0.5 }
-          }]
-        }));
-      }
+    if (dragState?.type === 'create' && onToolChange) {
+      // Switch back to pointer tool after creating an element
+      onToolChange('pointer');
     }
     setDragState(null);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
   };
 
   const transform = `translate(${view.x}, ${view.y}) scale(${view.zoom})`;
@@ -176,6 +205,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onWheel={handleWheel}
       onContextMenu={e => e.preventDefault()}
     >
       <g transform={transform}>
@@ -200,17 +230,29 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
         ))}
 
         {/* Active Connection Line Preview */}
-        {dragState?.type === 'connect' && (
-           <line 
-             x1={elements[dragState.targetId!].x + elements[dragState.targetId!].width/2}
-             y1={elements[dragState.targetId!].y + elements[dragState.targetId!].height/2}
-             x2={screenToWorld(0,0).x /* logic simplified for demo */} 
-             y2={0}
-             stroke="#3b82f6"
-             strokeWidth="2"
-             strokeDasharray="4 2"
-           />
-        )}
+        {pendingConnection && elements[pendingConnection.sourceId] && (() => {
+          const source = elements[pendingConnection.sourceId];
+          const p1 = { x: source.x + source.width / 2, y: source.y + source.height / 2 };
+          const p2 = pendingConnection.currentPos;
+          const curvature = 0.5;
+          const dx = Math.abs(p2.x - p1.x) * curvature;
+          const cp1 = { x: p1.x + (p2.x > p1.x ? dx : -dx), y: p1.y };
+          const cp2 = { x: p2.x + (p2.x > p1.x ? -dx : dx), y: p2.y };
+          const path = `M ${p1.x} ${p1.y} C ${cp1.x} ${cp1.y} ${cp2.x} ${cp2.y} ${p2.x} ${p2.y}`;
+          return (
+            <g pointerEvents="none">
+              <path 
+                d={path} 
+                fill="none" 
+                stroke="#3b82f6" 
+                strokeWidth={2} 
+                strokeDasharray="4 2"
+                className="transition-none"
+              />
+              <circle cx={p2.x} cy={p2.y} r={4} fill="#3b82f6" />
+            </g>
+          );
+        })()}
       </g>
     </svg>
   );

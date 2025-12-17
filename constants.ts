@@ -11,7 +11,8 @@ export const INITIAL_STATE: SceneState = {
 export const GRID_SIZE = 20;
 export const MIN_ZOOM = 0.1;
 export const MAX_ZOOM = 5;
-export const ZOOM_STEP = 1.1;
+export const ZOOM_STEP = 1.05;
+export const WHEEL_ZOOM_STEP = 0.001;
 
 export const DEFAULT_ELEMENT_WIDTH = 150;
 export const DEFAULT_ELEMENT_HEIGHT = 100;

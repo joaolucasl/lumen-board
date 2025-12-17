@@ -1,3 +1,5 @@
 - [x] Clicking outside an element should deselect it
 - [x] Clicking on element should not change the stroke color to blue. It should only show the selection box.
-- [] 
+- [x] Connect button doesn't work (it should allow the user to click first element and visually connect to the second element)
+- [x] Zoom is not smooth. Jumps between values.
+- [x] Once an element is created with the toolbar, go back to select tool.

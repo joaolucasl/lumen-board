@@ -2,7 +2,7 @@
 import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { SceneState, CanvasElement, Connection, ViewState, Tool, InfiniteCanvasRef, CreateElementOptions, CreateConnectionOptions, ElementType } from '../types';
 import { 
-  INITIAL_STATE, MIN_ZOOM, MAX_ZOOM, ZOOM_STEP, GRID_SIZE, 
+  INITIAL_STATE, MIN_ZOOM, MAX_ZOOM, ZOOM_STEP, WHEEL_ZOOM_STEP, GRID_SIZE, 
   DEFAULT_ELEMENT_WIDTH, DEFAULT_ELEMENT_HEIGHT,
   DEFAULT_TEXT_WIDTH, DEFAULT_TEXT_HEIGHT,
   DEFAULT_CUSTOM_WIDTH, DEFAULT_CUSTOM_HEIGHT,
@@ -114,7 +114,6 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
     };
 
     return {
-      // Original API
       exportJson: () => sceneRef.current,
       importJson: (data: SceneState) => updateScene(() => data),
       zoomIn: (amount = ZOOM_STEP) => updateScene(s => ({ ...s, view: { ...s.view, zoom: Math.min(MAX_ZOOM, s.view.zoom * amount) } })),
@@ -510,6 +509,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
         onSelect={handleSelection}
         customComponents={components}
         snapToGrid={config.snapToGrid}
+        onToolChange={setActiveTool}
       />
 
       {uiConfig.showToolbar && (
