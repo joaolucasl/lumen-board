@@ -1,5 +1,5 @@
 
-import { SceneState } from './types';
+import { SceneState } from '../types';
 
 export const INITIAL_STATE: SceneState = {
   version: 1,

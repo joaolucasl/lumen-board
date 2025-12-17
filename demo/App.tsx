@@ -1,7 +1,7 @@
 
 import React, { useRef, useState } from 'react';
-import InfiniteCanvas from './components/InfiniteCanvas';
-import { InfiniteCanvasRef, CanvasElement, Connection } from './types';
+import { InfiniteCanvas } from '../src';
+import type { InfiniteCanvasRef, CanvasElement, Connection } from '../src';
 
 // Example custom component for the SDK
 const UserCard: React.FC<{ width: number; height: number; data: any }> = ({ width, height, data }) => (

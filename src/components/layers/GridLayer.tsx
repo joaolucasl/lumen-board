@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { ViewState } from '../types';
-import { GRID_SIZE } from '../constants';
+import { ViewState } from '../../types';
+import { GRID_SIZE } from '../../constants';
 
 interface GridLayerProps {
   view: ViewState;
