@@ -14,8 +14,8 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
   const commonProps = {
     'data-element-id': id,
     fill: backgroundColor || '#ffffff',
-    stroke: isSelected ? '#3b82f6' : (strokeColor || '#000000'),
-    strokeWidth: isSelected ? (strokeWidth || 2) + 1 : (strokeWidth || 2),
+    stroke: strokeColor || '#000000',
+    strokeWidth: strokeWidth || 2,
     style: { cursor: 'move', opacity }
   };
 

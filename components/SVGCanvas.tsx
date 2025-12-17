@@ -50,6 +50,9 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
     const elementId = target.closest('[data-element-id]')?.getAttribute('data-element-id');
 
     if (activeTool === 'hand' || (activeTool === 'pointer' && !elementId)) {
+      if (activeTool === 'pointer') {
+        onSelect([]);
+      }
       setDragState({ type: 'pan', startPos: { x: e.clientX, y: e.clientY } });
     } else if (activeTool === 'pointer' && elementId) {
       if (!selectedIds.includes(elementId)) {

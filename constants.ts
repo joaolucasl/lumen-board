@@ -15,6 +15,20 @@ export const ZOOM_STEP = 1.1;
 
 export const DEFAULT_ELEMENT_WIDTH = 150;
 export const DEFAULT_ELEMENT_HEIGHT = 100;
+export const DEFAULT_TEXT_WIDTH = 200;
+export const DEFAULT_TEXT_HEIGHT = 40;
+export const DEFAULT_CUSTOM_WIDTH = 180;
+export const DEFAULT_CUSTOM_HEIGHT = 120;
+
+export const DEFAULTS = {
+  backgroundColor: '#ffffff',
+  strokeColor: '#000000',
+  strokeWidth: 2,
+  opacity: 1,
+  rotation: 0,
+  connectionWidth: 2,
+  connectionCurvature: 0.5,
+};
 
 export const COLORS = {
   primary: '#3b82f6',

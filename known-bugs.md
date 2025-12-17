@@ -1,3 +1,3 @@
-- [] Clicking outside an element should deselect it
-- [] Clicking on element should not change the stroke color to blue. It should only show the selection box.
+- [x] Clicking outside an element should deselect it
+- [x] Clicking on element should not change the stroke color to blue. It should only show the selection box.
 - [] 
