@@ -1,18 +1,18 @@
 
 import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
-import { SceneState, CanvasElement, Connection, ViewState, Tool, InfiniteCanvasRef, CreateElementOptions, CreateConnectionOptions, ElementType } from '../types';
+import { SceneState, CanvasElement, Connection, ViewState, Tool, InfiniteCanvasRef, CreateElementOptions, CreateConnectionOptions, ElementType } from '../../types';
 import { 
   INITIAL_STATE, MIN_ZOOM, MAX_ZOOM, ZOOM_STEP, WHEEL_ZOOM_STEP, GRID_SIZE, 
   DEFAULT_ELEMENT_WIDTH, DEFAULT_ELEMENT_HEIGHT,
   DEFAULT_TEXT_WIDTH, DEFAULT_TEXT_HEIGHT,
   DEFAULT_CUSTOM_WIDTH, DEFAULT_CUSTOM_HEIGHT,
   DEFAULTS 
-} from '../constants';
+} from '../../constants';
 import SVGCanvas from './SVGCanvas';
-import GridLayer from './GridLayer';
-import Toolbar from './Toolbar';
-import PropertiesPanel from './PropertiesPanel';
-import ZoomControls from './ZoomControls';
+import GridLayer from '../layers/GridLayer';
+import Toolbar from '../ui/Toolbar';
+import PropertiesPanel from '../ui/PropertiesPanel';
+import ZoomControls from '../ui/ZoomControls';
 
 interface InfiniteCanvasProps {
   initialData?: SceneState;

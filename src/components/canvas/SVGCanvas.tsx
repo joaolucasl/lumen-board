@@ -1,9 +1,9 @@
 
 import React, { useCallback, useRef, useState, useMemo } from 'react';
-import { SceneState, CanvasElement, ViewState, Tool, HandleType } from '../types';
-import ElementRenderer from './ElementRenderer';
-import ConnectionRenderer from './ConnectionRenderer';
-import { GRID_SIZE } from '../constants';
+import { SceneState, CanvasElement, ViewState, Tool, HandleType } from '../../types';
+import ElementRenderer from '../elements/ElementRenderer';
+import ConnectionRenderer from '../elements/ConnectionRenderer';
+import { GRID_SIZE } from '../../constants';
 
 interface SVGCanvasProps {
   scene: SceneState;
