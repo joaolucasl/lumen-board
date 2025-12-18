@@ -4,6 +4,8 @@ import { SceneState, CanvasElement, ViewState, Tool, HandleType } from '../../ty
 import ElementRenderer from '../elements/ElementRenderer';
 import ConnectionRenderer from '../elements/ConnectionRenderer';
 import { GRID_SIZE } from '../../constants';
+import { createConnectionId, createElementId } from '../../utils/ids';
+import { screenToWorldPoint } from '../../utils/viewport';
 
 interface SVGCanvasProps {
   scene: SceneState;
@@ -46,10 +48,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   const screenToWorld = useCallback((clientX: number, clientY: number) => {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
-    return {
-      x: (clientX - rect.left - view.x) / view.zoom,
-      y: (clientY - rect.top - view.y) / view.zoom,
-    };
+    return screenToWorldPoint(clientX, clientY, rect, view);
   }, [view]);
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -72,7 +71,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
         initialElements: { ...elements } 
       });
     } else if (['rectangle', 'ellipse', 'diamond', 'text'].includes(activeTool)) {
-      const id = `el_${Date.now()}`;
+      const id = createElementId(false);
       const newElement: CanvasElement = {
         id,
         type: activeTool as any,
@@ -96,7 +95,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
         if (pendingConnection) {
           // Second click: complete the connection
           if (elementId !== pendingConnection.sourceId) {
-            const id = `conn_${Date.now()}`;
+            const id = createConnectionId(false);
             onUpdateScene(s => ({
               ...s,
               connections: [...s.connections, {

@@ -3,11 +3,11 @@ import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef, 
 import { SceneState, CanvasElement, Connection, ViewState, Tool, InfiniteCanvasRef, CreateElementOptions, CreateConnectionOptions, ElementType } from '../../types';
 import { 
   INITIAL_STATE, MIN_ZOOM, MAX_ZOOM, ZOOM_STEP, WHEEL_ZOOM_STEP, GRID_SIZE, 
-  DEFAULT_ELEMENT_WIDTH, DEFAULT_ELEMENT_HEIGHT,
-  DEFAULT_TEXT_WIDTH, DEFAULT_TEXT_HEIGHT,
-  DEFAULT_CUSTOM_WIDTH, DEFAULT_CUSTOM_HEIGHT,
   DEFAULTS 
 } from '../../constants';
+import { createConnectionId, createElementId } from '../../utils/ids';
+import { getDefaultElementSize } from '../../utils/elementDefaults';
+import { clampZoom, screenToWorldPoint, worldToScreenPoint } from '../../utils/viewport';
 import SVGCanvas from './SVGCanvas';
 import GridLayer from '../layers/GridLayer';
 import Toolbar from '../ui/Toolbar';
@@ -80,10 +80,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return { x: 0, y: 0 };
       const view = sceneRef.current.view;
-      return {
-        x: (screenX - rect.left - view.x) / view.zoom,
-        y: (screenY - rect.top - view.y) / view.zoom,
-      };
+      return screenToWorldPoint(screenX, screenY, rect, view);
     };
 
     // Helper: World to Screen
@@ -91,33 +88,14 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
       const rect = containerRef.current?.getBoundingClientRect();
       if (!rect) return { x: 0, y: 0 };
       const view = sceneRef.current.view;
-      return {
-        x: (worldX * view.zoom) + view.x + rect.left,
-        y: (worldY * view.zoom) + view.y + rect.top,
-      };
-    };
-
-    // Helper: Get defaults based on type
-    const getDefaults = (type: ElementType) => {
-      let width = DEFAULT_ELEMENT_WIDTH;
-      let height = DEFAULT_ELEMENT_HEIGHT;
-      
-      if (type === 'text') {
-        width = DEFAULT_TEXT_WIDTH;
-        height = DEFAULT_TEXT_HEIGHT;
-      } else if (type === 'custom') {
-        width = DEFAULT_CUSTOM_WIDTH;
-        height = DEFAULT_CUSTOM_HEIGHT;
-      }
-
-      return { width, height };
+      return worldToScreenPoint(worldX, worldY, rect, view);
     };
 
     return {
       exportJson: () => sceneRef.current,
       importJson: (data: SceneState) => updateScene(() => data),
-      zoomIn: (amount = ZOOM_STEP) => updateScene(s => ({ ...s, view: { ...s.view, zoom: Math.min(MAX_ZOOM, s.view.zoom * amount) } })),
-      zoomOut: (amount = ZOOM_STEP) => updateScene(s => ({ ...s, view: { ...s.view, zoom: Math.max(MIN_ZOOM, s.view.zoom / amount) } })),
+      zoomIn: (amount = ZOOM_STEP) => updateScene(s => ({ ...s, view: { ...s.view, zoom: clampZoom(s.view.zoom * amount, MIN_ZOOM, MAX_ZOOM) } })),
+      zoomOut: (amount = ZOOM_STEP) => updateScene(s => ({ ...s, view: { ...s.view, zoom: clampZoom(s.view.zoom / amount, MIN_ZOOM, MAX_ZOOM) } })),
       fitView: () => {
         updateScene(s => ({ ...s, view: { x: 0, y: 0, zoom: 1 } }));
       },
@@ -125,7 +103,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
 
       // EditorAPI - Elements
       createElement: (options: CreateElementOptions) => {
-        const defaults = getDefaults(options.type);
+        const defaults = getDefaultElementSize(options.type);
         const center = (() => {
            const rect = containerRef.current?.getBoundingClientRect();
            if (!rect) return { x: 0, y: 0 };
@@ -134,7 +112,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
         })();
 
         const newElement: CanvasElement = {
-          id: options.id || `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: options.id || createElementId(true),
           type: options.type,
           x: options.x ?? center.x - (options.width ?? defaults.width) / 2,
           y: options.y ?? center.y - (options.height ?? defaults.height) / 2,
@@ -164,9 +142,9 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
         const center = rect ? screenToWorld(rect.left + rect.width / 2, rect.top + rect.height / 2) : { x: 0, y: 0 };
         
         const newElements: CanvasElement[] = optionsList.map(options => {
-          const defaults = getDefaults(options.type);
+          const defaults = getDefaultElementSize(options.type);
           return {
-            id: options.id || `el_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            id: options.id || createElementId(true),
             type: options.type,
             x: options.x ?? center.x - (options.width ?? defaults.width) / 2,
             y: options.y ?? center.y - (options.height ?? defaults.height) / 2,
@@ -264,7 +242,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
       // EditorAPI - Connections
       createConnection: (options: CreateConnectionOptions) => {
         const newConnection: Connection = {
-          id: options.id || `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: options.id || createConnectionId(true),
           sourceId: options.sourceId,
           targetId: options.targetId,
           sourceHandle: options.sourceHandle === 'auto' ? undefined : options.sourceHandle,
@@ -286,7 +264,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
 
       createConnections: (optionsList: CreateConnectionOptions[]) => {
          const newConnections: Connection[] = optionsList.map(options => ({
-          id: options.id || `conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          id: options.id || createConnectionId(true),
           sourceId: options.sourceId,
           targetId: options.targetId,
           sourceHandle: options.sourceHandle === 'auto' ? undefined : options.sourceHandle,
@@ -402,7 +380,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
       },
       setZoom: (level: number, focalPoint?: { x: number; y: number }) => {
         updateScene(s => {
-          const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, level));
+          const newZoom = clampZoom(level, MIN_ZOOM, MAX_ZOOM);
           if (!focalPoint) {
              const rect = containerRef.current?.getBoundingClientRect();
              if (!rect) return { ...s, view: { ...s.view, zoom: newZoom } };
