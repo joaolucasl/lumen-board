@@ -6,6 +6,7 @@ import ConnectionRenderer from '../elements/ConnectionRenderer';
 import { GRID_SIZE } from '../../constants';
 import { createConnectionId, createElementId } from '../../utils/ids';
 import { screenToWorldPoint } from '../../utils/viewport';
+import { deleteConnectionsForElements, deleteElementsFromMap } from '../../utils/scene';
 
 interface SVGCanvasProps {
   scene: SceneState;
@@ -118,12 +119,11 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
       return; // Don't capture pointer for connection tool
     } else if (activeTool === 'eraser' && elementId) {
       onUpdateScene(s => {
-        const newElements = { ...s.elements };
-        delete newElements[elementId];
+        const newElements = deleteElementsFromMap(s.elements, [elementId]);
         return {
           ...s,
           elements: newElements,
-          connections: s.connections.filter(c => c.sourceId !== elementId && c.targetId !== elementId)
+          connections: deleteConnectionsForElements(s.connections, [elementId])
         };
       });
     }
