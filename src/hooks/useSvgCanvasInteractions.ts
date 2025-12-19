@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import type React from 'react';
 import type { RefObject } from 'react';
 import type { CanvasElement, SceneState, Tool } from '../types';
 import { GRID_SIZE } from '../constants';
@@ -55,8 +56,13 @@ export function useSvgCanvasInteractions({
       const worldPos = screenToWorld(e.clientX, e.clientY);
       const target = e.target as SVGElement;
       const elementId = target.closest('[data-element-id]')?.getAttribute('data-element-id');
+      const connectionId = target.closest('[data-connection-id]')?.getAttribute('data-connection-id');
 
-      if (activeTool === 'hand' || (activeTool === 'pointer' && !elementId)) {
+      if (activeTool === 'pointer' && !elementId && connectionId) {
+        if (!selectedIds.includes(connectionId)) {
+          onSelect(e.shiftKey ? [...selectedIds, connectionId] : [connectionId]);
+        }
+      } else if (activeTool === 'hand' || (activeTool === 'pointer' && !elementId && !connectionId)) {
         if (activeTool === 'pointer') {
           onSelect([]);
         }
@@ -117,15 +123,22 @@ export function useSvgCanvasInteractions({
           setPendingConnection(null);
         }
         return;
-      } else if (activeTool === 'eraser' && elementId) {
-        onUpdateScene((s) => {
-          const newElements = deleteElementsFromMap(s.elements, [elementId]);
-          return {
+      } else if (activeTool === 'eraser' && (elementId || connectionId)) {
+        if (elementId) {
+          onUpdateScene((s) => {
+            const newElements = deleteElementsFromMap(s.elements, [elementId]);
+            return {
+              ...s,
+              elements: newElements,
+              connections: deleteConnectionsForElements(s.connections, [elementId]),
+            };
+          });
+        } else if (connectionId) {
+          onUpdateScene((s) => ({
             ...s,
-            elements: newElements,
-            connections: deleteConnectionsForElements(s.connections, [elementId]),
-          };
-        });
+            connections: s.connections.filter((c) => c.id !== connectionId),
+          }));
+        }
       }
 
       (e.target as Element).setPointerCapture(e.pointerId);

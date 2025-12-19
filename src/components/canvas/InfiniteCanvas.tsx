@@ -3,6 +3,7 @@ import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef, 
 import { SceneState, CanvasElement, Tool, InfiniteCanvasRef } from '../../types';
 import { INITIAL_STATE } from '../../constants';
 import { useInfiniteCanvasApi } from '../../hooks/useInfiniteCanvasApi';
+import { deleteConnectionsForElements, deleteElementsFromMap } from '../../utils/scene';
 import SVGCanvas from './SVGCanvas';
 import GridLayer from '../layers/GridLayer';
 import Toolbar from '../ui/Toolbar';
@@ -68,6 +69,47 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
     onSelectionChange?.(ids);
     forceUpdate();
   }, [onSelectionChange, forceUpdate]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (config.readonly) return;
+      if (e.key !== 'Backspace' && e.key !== 'Delete') return;
+
+      const active = document.activeElement as HTMLElement | null;
+      if (active) {
+        const tag = active.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (active as any).isContentEditable) return;
+      }
+
+      const ids = selectedIdsRef.current;
+      if (ids.length === 0) return;
+
+      e.preventDefault();
+
+      updateScene((prev) => {
+        const selectedElements = ids.filter((id) => Boolean(prev.elements[id]));
+        const selectedConnections = ids.filter((id) => prev.connections.some((c) => c.id === id));
+
+        const nextElements = selectedElements.length > 0 ? deleteElementsFromMap(prev.elements, selectedElements) : prev.elements;
+
+        let nextConnections = prev.connections;
+        if (selectedElements.length > 0) {
+          nextConnections = deleteConnectionsForElements(nextConnections, selectedElements);
+        }
+        if (selectedConnections.length > 0) {
+          const idSet = new Set(selectedConnections);
+          nextConnections = nextConnections.filter((c) => !idSet.has(c.id));
+        }
+
+        return { ...prev, elements: nextElements, connections: nextConnections };
+      });
+
+      handleSelection([]);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [config.readonly, handleSelection, updateScene]);
 
   const api = useInfiniteCanvasApi({
     sceneRef,

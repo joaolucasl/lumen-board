@@ -31,6 +31,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   const svgRef = useRef<SVGSVGElement>(null);
 
   const {
+    dragState,
     pendingConnection,
     handlePointerDown,
     handlePointerMove,
@@ -49,10 +50,24 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
 
   const transform = `translate(${view.x}, ${view.y}) scale(${view.zoom})`;
 
+  const isDragging = Boolean(dragState);
+  const canvasCursor: React.CSSProperties['cursor'] = isDragging
+    ? 'grabbing'
+    : activeTool === 'hand'
+      ? 'grab'
+      : 'default';
+
+  const hoverCursor: React.CSSProperties['cursor'] = isDragging
+    ? 'grabbing'
+    : activeTool === 'pointer'
+      ? 'pointer'
+      : undefined;
+
   return (
     <svg 
       ref={svgRef}
       className="w-full h-full touch-none outline-none"
+      style={{ cursor: canvasCursor }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -66,6 +81,8 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
             key={conn.id} 
             connection={conn} 
             elements={elements} 
+            isSelected={selectedIds.includes(conn.id)}
+            cursor={hoverCursor}
           />
         ))}
 
@@ -77,6 +94,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
             element={el} 
             isSelected={selectedIds.includes(el.id)}
             customComponent={el.componentType ? customComponents[el.componentType] : undefined}
+            cursor={hoverCursor}
           />
         ))}
 

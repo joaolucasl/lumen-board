@@ -1,14 +1,15 @@
 
 import React from 'react';
-import { CanvasElement } from '../types';
+import { CanvasElement } from '../../types';
 
 interface ElementRendererProps {
   element: CanvasElement;
   isSelected: boolean;
   customComponent?: React.FC<any>;
+  cursor?: React.CSSProperties['cursor'];
 }
 
-const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, customComponent: CustomComp }) => {
+const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, customComponent: CustomComp, cursor }) => {
   const { id, type, x, y, width, height, rotation, backgroundColor, strokeColor, strokeWidth, opacity, text } = element;
   
   const commonProps = {
@@ -16,7 +17,7 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
     fill: backgroundColor || '#ffffff',
     stroke: strokeColor || '#000000',
     strokeWidth: strokeWidth || 2,
-    style: { cursor: 'move', opacity }
+    style: { cursor, opacity }
   };
 
   const transform = `rotate(${rotation}, ${x + width / 2}, ${y + height / 2})`;
@@ -32,7 +33,7 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
         return <polygon points={points} {...commonProps} />;
       case 'text':
         return (
-          <g transform={transform} data-element-id={id}>
+          <g transform={transform} data-element-id={id} style={{ cursor, opacity }}>
             <text 
               x={x + width / 2} 
               y={y + height / 2} 
@@ -49,7 +50,7 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
       case 'custom':
         if (!CustomComp) return null;
         return (
-          <foreignObject x={x} y={y} width={width} height={height} transform={transform} data-element-id={id}>
+          <foreignObject x={x} y={y} width={width} height={height} transform={transform} data-element-id={id} style={{ cursor, opacity }}>
             <div className={`w-full h-full overflow-hidden ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
               <CustomComp width={width} height={height} data={element.props} />
             </div>

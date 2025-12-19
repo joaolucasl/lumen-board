@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CanvasElement } from '../types';
+import { CanvasElement } from '../../types';
 
 interface PropertiesPanelProps {
   elements: CanvasElement[];

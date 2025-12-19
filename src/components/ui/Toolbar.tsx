@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Tool } from '../types';
+import { Tool } from '../../types';
 
 interface ToolbarProps {
   activeTool: Tool;
