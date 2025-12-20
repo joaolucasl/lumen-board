@@ -73,7 +73,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   return (
     <svg 
       ref={svgRef}
-      className="w-full h-full touch-none outline-none"
+      className="lb-svg-canvas"
       style={{ cursor: canvasCursor }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

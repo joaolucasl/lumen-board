@@ -14,7 +14,7 @@ const GridLayer: React.FC<GridLayerProps> = ({ view }) => {
 
   return (
     <div 
-      className="absolute inset-0 pointer-events-none opacity-20"
+      className="lb-grid-layer"
       style={{
         backgroundImage: `radial-gradient(circle, #4b5563 1px, transparent 1px)`,
         backgroundSize: `${size}px ${size}px`,

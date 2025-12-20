@@ -125,7 +125,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-full overflow-hidden bg-[#fafafa] select-none ${activeTool === 'hand' ? 'cursor-grab active:cursor-grabbing' : 'cursor-default'}`}
+      className={`lb-canvas-container ${activeTool === 'hand' ? 'lb-canvas-container--hand' : 'lb-canvas-container--default'}`}
     >
       {config.grid !== false && <GridLayer view={sceneRef.current.view} />}
       

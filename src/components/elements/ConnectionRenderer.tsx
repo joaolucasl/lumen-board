@@ -64,7 +64,7 @@ const ConnectionRenderer: React.FC<ConnectionRendererProps> = ({ connection, ele
         stroke={isSelected ? '#3b82f6' : strokeColor} 
         strokeWidth={isSelected ? strokeWidth + 1 : strokeWidth} 
         strokeLinecap="round"
-        className="transition-all duration-300"
+        className="lb-connection"
         pointerEvents="none"
       />
       <circle cx={p2.x} cy={p2.y} r={4} fill={strokeColor} pointerEvents="none" />

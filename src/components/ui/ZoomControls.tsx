@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Icons } from './Icons';
 
 interface ZoomControlsProps {
   zoom: number;
@@ -10,26 +11,26 @@ interface ZoomControlsProps {
 
 const ZoomControls: React.FC<ZoomControlsProps> = ({ zoom, onZoomIn, onZoomOut, onFitView }) => {
   return (
-    <div className="absolute bottom-6 left-6 flex items-center space-x-2 bg-white/80 backdrop-blur-md p-1.5 rounded-xl shadow-lg border border-gray-100 z-50">
+    <div className="lb-zoom-controls">
       <button 
         onClick={onZoomOut}
-        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg"
+        className="lb-zoom-button"
       >
-        <i className="fas fa-minus text-xs"></i>
+        <Icons.Minus width={12} height={12} />
       </button>
-      <span className="text-xs font-bold text-gray-700 w-12 text-center">
+      <span className="lb-zoom-value">
         {Math.round(zoom * 100)}%
       </span>
       <button 
         onClick={onZoomIn}
-        className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg"
+        className="lb-zoom-button"
       >
-        <i className="fas fa-plus text-xs"></i>
+        <Icons.Plus width={12} height={12} />
       </button>
-      <div className="w-[1px] h-4 bg-gray-200 mx-1" />
+      <div className="lb-zoom-separator" />
       <button 
         onClick={onFitView}
-        className="px-2 h-8 flex items-center justify-center text-[10px] font-bold text-gray-500 hover:bg-gray-100 rounded-lg uppercase"
+        className="lb-fit-button"
       >
         Fit View
       </button>

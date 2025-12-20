@@ -1,0 +1,249 @@
+body {
+  margin: 0;
+  font-family: 'Rethink Sans', sans-serif;
+  background-color: #f9fafb;
+}
+
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-header {
+  height: 4rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  z-index: 10;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  width: 2rem;
+  height: 2rem;
+  background-color: #2563eb;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+.app-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.app-title span {
+  color: #3b82f6;
+  font-weight: 500;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.last-action {
+  font-size: 0.75rem;
+  color: #6b7280;
+  background-color: #f9fafb;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+}
+
+.export-btn {
+  padding: 0.625rem 1.25rem;
+  background-color: #111827;
+  color: white;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn:hover {
+  background-color: #1f2937;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+}
+
+.sidebar {
+  width: 30%;
+  background-color: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  overflow-y: auto;
+}
+
+.sidebar-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section-title {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.section-icon {
+  margin-right: 0.5rem;
+  color: #3b82f6;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.col-span-2 {
+  grid-column: span 2;
+}
+
+.action-btn {
+  padding: 0.5rem 0.75rem;
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-blue { background-color: #3b82f6; }
+.btn-blue:hover { background-color: #2563eb; }
+
+.btn-green { background-color: #22c55e; }
+.btn-green:hover { background-color: #16a34a; }
+
+.btn-purple { background-color: #a855f7; }
+.btn-purple:hover { background-color: #9333ea; }
+
+.btn-orange { background-color: #f97316; }
+.btn-orange:hover { background-color: #ea580c; }
+
+.btn-indigo { background-color: #6366f1; }
+.btn-indigo:hover { background-color: #4f46e5; }
+
+.btn-yellow { background-color: #eab308; }
+.btn-yellow:hover { background-color: #ca8a04; }
+
+.btn-red { background-color: #ef4444; }
+.btn-red:hover { background-color: #dc2626; }
+
+.btn-teal { background-color: #14b8a6; }
+.btn-teal:hover { background-color: #0d9488; }
+
+.btn-gray { background-color: #374151; }
+.btn-gray:hover { background-color: #1f2937; }
+
+.btn-light-gray { background-color: #4b5563; }
+.btn-light-gray:hover { background-color: #374151; }
+
+.btn-blue-dark { background-color: #2563eb; }
+.btn-blue-dark:hover { background-color: #1d4ed8; }
+
+.btn-secondary { background-color: #6b7280; }
+.btn-secondary:hover { background-color: #4b5563; }
+
+.canvas-area {
+  flex: 1;
+  position: relative;
+}
+
+/* User Card Component */
+.user-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background-color: #dbeafe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3b82f6;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.user-role {
+  font-size: 0.625rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.user-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f9fafb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background-color: #dcfce7;
+  color: #16a34a;
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.user-action {
+  font-size: 0.75rem;
+  color: #3b82f6;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

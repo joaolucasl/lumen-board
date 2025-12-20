@@ -39,7 +39,7 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
               y={y + height / 2} 
               textAnchor="middle" 
               dominantBaseline="middle"
-              className="select-none font-medium pointer-events-none"
+              className="lb-element-text"
               style={{ fontSize: 16, fill: strokeColor }}
             >
               {text}
@@ -51,7 +51,7 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
         if (!CustomComp) return null;
         return (
           <foreignObject x={x} y={y} width={width} height={height} transform={transform} data-element-id={id} style={{ cursor, opacity }}>
-            <div className={`w-full h-full overflow-hidden ${isSelected ? 'ring-2 ring-blue-500' : ''}`}>
+            <div className={`lb-element-container ${isSelected ? 'lb-element-container--selected' : ''}`}>
               <CustomComp width={width} height={height} data={element.props} />
             </div>
           </foreignObject>
@@ -67,8 +67,7 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
       {isSelected && (
         <rect 
           x={x - 4} y={y - 4} width={width + 8} height={height + 8} 
-          fill="none" stroke="#3b82f6" strokeWidth="1" strokeDasharray="4 2"
-          className="pointer-events-none"
+          className="lb-selection-rect"
         />
       )}
     </g>

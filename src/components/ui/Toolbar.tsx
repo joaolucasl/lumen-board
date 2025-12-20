@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Tool } from '../../types';
+import { Icons } from './Icons';
 
 interface ToolbarProps {
   activeTool: Tool;
@@ -11,46 +12,38 @@ interface ToolbarProps {
 
 const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onToolSelect, keepToolActive, onToggleKeepToolActive }) => {
 
-  const tools: { id: Tool; icon: string; label: string }[] = [
-    { id: 'pointer', icon: 'fa-mouse-pointer', label: 'Select' },
-    { id: 'hand', icon: 'fa-hand', label: 'Pan' },
-    { id: 'rectangle', icon: 'fa-square', label: 'Rectangle' },
-    { id: 'ellipse', icon: 'fa-circle', label: 'Ellipse' },
-    { id: 'diamond', icon: 'fa-rhombus', label: 'Diamond' },
-    { id: 'text', icon: 'fa-font', label: 'Text' },
-    { id: 'connection', icon: 'fa-share-alt', label: 'Connect' },
-    { id: 'eraser', icon: 'fa-eraser', label: 'Eraser' },
+  const tools: { id: Tool; icon: React.FC<React.SVGProps<SVGSVGElement>>; label: string }[] = [
+    { id: 'pointer', icon: Icons.Pointer, label: 'Select' },
+    { id: 'hand', icon: Icons.Hand, label: 'Pan' },
+    { id: 'rectangle', icon: Icons.Square, label: 'Rectangle' },
+    { id: 'ellipse', icon: Icons.Circle, label: 'Ellipse' },
+    { id: 'diamond', icon: Icons.Diamond, label: 'Diamond' },
+    { id: 'text', icon: Icons.Type, label: 'Text' },
+    { id: 'connection', icon: Icons.ArrowRight, label: 'Connect' },
+    { id: 'eraser', icon: Icons.Eraser, label: 'Eraser' },
   ];
 
   return (
-    <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center space-x-2 bg-white/80 backdrop-blur-md p-1.5 rounded-2xl shadow-xl border border-white/40 z-50">
+    <div className="lb-toolbar">
       {tools.map(tool => (
         <button
           key={tool.id}
           onClick={() => onToolSelect(tool.id)}
-          className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
-            activeTool === tool.id 
-              ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30' 
-              : 'text-gray-600 hover:bg-gray-100'
-          }`}
+          className={`lb-tool-button ${activeTool === tool.id ? 'lb-tool-button--active' : ''}`}
           title={tool.label}
         >
-          <i className={`fas ${tool.icon}`}></i>
+          <tool.icon width={20} height={20} />
         </button>
       ))}
 
-      <div className="w-px h-6 bg-gray-200 mx-1" />
+      <div className="lb-toolbar__separator" />
 
       <button
         onClick={onToggleKeepToolActive}
-        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
-          keepToolActive
-            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-            : 'text-gray-600 hover:bg-gray-100'
-        }`}
+        className={`lb-tool-button ${keepToolActive ? 'lb-tool-button--active' : ''}`}
         title="Keep selected tool active after use"
       >
-        <i className={`fas ${keepToolActive ? 'fa-lock' : 'fa-lock-open'}`}></i>
+        {keepToolActive ? <Icons.Lock width={18} height={18} /> : <Icons.Unlock width={18} height={18} />}
       </button>
     </div>
   );

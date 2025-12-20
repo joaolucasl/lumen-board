@@ -1,6 +1,5 @@
 import React from 'react';
 import type { CanvasElement, ResizeHandleType } from '../../types';
-import { COLORS } from '../../constants';
 
 export interface ResizeHandlesProps {
   element: CanvasElement;
@@ -73,11 +72,9 @@ const ResizeHandles: React.FC<ResizeHandlesProps> = ({ element, onPointerDown })
             y={pos.y - HANDLE_SIZE / 2}
             width={HANDLE_SIZE}
             height={HANDLE_SIZE}
-            fill={COLORS.white}
-            stroke={COLORS.selectionBorder}
-            strokeWidth={1}
             rx={1}
             ry={1}
+            className="lb-resize-handle"
             style={{ cursor: handle.cursor }}
             onPointerDown={(e) => {
               // Allow bubbling so the canvas interaction hook can manage drag state.

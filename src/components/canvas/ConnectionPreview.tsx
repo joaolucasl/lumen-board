@@ -23,7 +23,7 @@ const ConnectionPreview: React.FC<ConnectionPreviewProps> = ({ source, currentPo
         stroke="#3b82f6"
         strokeWidth={2}
         strokeDasharray="4 2"
-        className="transition-none"
+        className="lb-connection-preview"
       />
       <circle cx={p2.x} cy={p2.y} r={4} fill="#3b82f6" />
     </g>

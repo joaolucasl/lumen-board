@@ -31,14 +31,3 @@ export const DEFAULTS = {
   connectionWidth: 2,
   connectionCurvature: 0.5,
 };
-
-export const COLORS = {
-  primary: '#3b82f6',
-  white: '#ffffff',
-  gray: '#f3f4f6',
-  darkGray: '#4b5563',
-  background: '#fafafa',
-  border: '#e5e7eb',
-  selection: 'rgba(59, 130, 246, 0.1)',
-  selectionBorder: '#3b82f6',
-};
