@@ -5,9 +5,11 @@ import { Tool } from '../../types';
 interface ToolbarProps {
   activeTool: Tool;
   onToolSelect: (tool: Tool) => void;
+  keepToolActive: boolean;
+  onToggleKeepToolActive: () => void;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onToolSelect }) => {
+const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onToolSelect, keepToolActive, onToggleKeepToolActive }) => {
 
   const tools: { id: Tool; icon: string; label: string }[] = [
     { id: 'pointer', icon: 'fa-mouse-pointer', label: 'Select' },
@@ -36,6 +38,20 @@ const Toolbar: React.FC<ToolbarProps> = ({ activeTool, onToolSelect }) => {
           <i className={`fas ${tool.icon}`}></i>
         </button>
       ))}
+
+      <div className="w-px h-6 bg-gray-200 mx-1" />
+
+      <button
+        onClick={onToggleKeepToolActive}
+        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-200 ${
+          keepToolActive
+            ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
+            : 'text-gray-600 hover:bg-gray-100'
+        }`}
+        title="Keep selected tool active after use"
+      >
+        <i className={`fas ${keepToolActive ? 'fa-lock' : 'fa-lock-open'}`}></i>
+      </button>
     </div>
   );
 };

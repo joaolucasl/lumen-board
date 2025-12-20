@@ -12,6 +12,7 @@ export type UseSvgCanvasInteractionsArgs = {
   scene: SceneState;
   selectedIds: string[];
   activeTool: Tool;
+  keepToolActive?: boolean;
   snapToGrid?: boolean;
   onUpdateScene: (updater: (prev: SceneState) => SceneState) => void;
   onSelect: (ids: string[]) => void;
@@ -23,6 +24,7 @@ export function useSvgCanvasInteractions({
   scene,
   selectedIds,
   activeTool,
+  keepToolActive,
   snapToGrid,
   onUpdateScene,
   onSelect,
@@ -114,6 +116,10 @@ export function useSvgCanvasInteractions({
                   },
                 ],
               }));
+
+              if (!keepToolActive && onToolChange) {
+                onToolChange('pointer');
+              }
             }
             setPendingConnection(null);
           } else {
@@ -139,6 +145,10 @@ export function useSvgCanvasInteractions({
             connections: s.connections.filter((c) => c.id !== connectionId),
           }));
         }
+
+        if (!keepToolActive && onToolChange) {
+          onToolChange('pointer');
+        }
       }
 
       (e.target as Element).setPointerCapture(e.pointerId);
@@ -146,8 +156,10 @@ export function useSvgCanvasInteractions({
     [
       activeTool,
       elements,
+      keepToolActive,
       onSelect,
       onUpdateScene,
+      onToolChange,
       pendingConnection,
       screenToWorld,
       selectedIds,
@@ -215,12 +227,12 @@ export function useSvgCanvasInteractions({
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
-      if (dragState?.type === 'create' && onToolChange) {
+      if (dragState?.type === 'create' && onToolChange && !keepToolActive) {
         onToolChange('pointer');
       }
       setDragState(null);
     },
-    [dragState, onToolChange]
+    [dragState, keepToolActive, onToolChange]
   );
 
   const handleWheel = useCallback((e: React.WheelEvent) => {

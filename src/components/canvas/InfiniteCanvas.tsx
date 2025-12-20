@@ -45,6 +45,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
   const [, setTick] = useState(0); // Force render
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<Tool>('pointer');
+  const [keepToolActive, setKeepToolActive] = useState(false);
 
   const forceUpdate = useCallback(() => setTick(t => t + 1), []);
 
@@ -132,6 +133,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
         scene={sceneRef.current}
         selectedIds={selectedIdsRef.current}
         activeTool={activeTool}
+        keepToolActive={keepToolActive}
         onUpdateScene={updateScene}
         onSelect={handleSelection}
         customComponents={components}
@@ -143,6 +145,8 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
         <Toolbar 
           activeTool={activeTool} 
           onToolSelect={setActiveTool} 
+          keepToolActive={keepToolActive}
+          onToggleKeepToolActive={() => setKeepToolActive((v) => !v)}
         />
       )}
 

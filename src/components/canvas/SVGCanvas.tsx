@@ -10,6 +10,7 @@ interface SVGCanvasProps {
   scene: SceneState;
   selectedIds: string[];
   activeTool: Tool;
+  keepToolActive?: boolean;
   onUpdateScene: (updater: (prev: SceneState) => SceneState) => void;
   onSelect: (ids: string[]) => void;
   customComponents: Record<string, React.FC<any>>;
@@ -21,6 +22,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
   scene, 
   selectedIds, 
   activeTool, 
+  keepToolActive,
   onUpdateScene, 
   onSelect,
   customComponents,
@@ -42,6 +44,7 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
     scene,
     selectedIds,
     activeTool,
+    keepToolActive,
     snapToGrid,
     onUpdateScene,
     onSelect,
