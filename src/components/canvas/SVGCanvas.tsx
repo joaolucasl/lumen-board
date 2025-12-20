@@ -5,6 +5,7 @@ import ElementRenderer from '../elements/ElementRenderer';
 import ConnectionRenderer from '../elements/ConnectionRenderer';
 import { useSvgCanvasInteractions } from '../../hooks/useSvgCanvasInteractions';
 import ConnectionPreview from './ConnectionPreview';
+import ResizeHandles from './ResizeHandles';
 
 interface SVGCanvasProps {
   scene: SceneState;
@@ -53,6 +54,9 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
 
   const transform = `translate(${view.x}, ${view.y}) scale(${view.zoom})`;
 
+  const singleSelectedElement =
+    selectedIds.length === 1 ? elements[selectedIds[0]] : undefined;
+
   const isDragging = Boolean(dragState);
   const canvasCursor: React.CSSProperties['cursor'] = isDragging
     ? 'grabbing'
@@ -100,6 +104,11 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
             cursor={hoverCursor}
           />
         ))}
+
+        {/* Resize Handles for single element selection */}
+        {singleSelectedElement && !singleSelectedElement.locked && (
+          <ResizeHandles element={singleSelectedElement} />
+        )}
 
         {/* Active Connection Line Preview */}
         {pendingConnection && elements[pendingConnection.sourceId] && (

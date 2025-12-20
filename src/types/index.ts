@@ -1,5 +1,14 @@
 
 export type ElementType = 'rectangle' | 'ellipse' | 'text' | 'custom' | 'diamond';
+export type ResizeHandleType =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'left-center'
+  | 'right-center'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right';
 
 export interface ViewState {
   x: number;

@@ -20,6 +20,7 @@ export const DEFAULT_TEXT_WIDTH = 200;
 export const DEFAULT_TEXT_HEIGHT = 40;
 export const DEFAULT_CUSTOM_WIDTH = 180;
 export const DEFAULT_CUSTOM_HEIGHT = 120;
+export const MIN_ELEMENT_SIZE = 20;
 
 export const DEFAULTS = {
   backgroundColor: '#ffffff',
