@@ -66,6 +66,7 @@ const ResizeHandles: React.FC<ResizeHandlesProps> = ({ element, onPointerDown })
         return (
           <rect
             key={handle.type}
+            data-handle={handle.type}
             data-resize-handle={handle.type}
             data-resize-target={element.id}
             x={pos.x - HANDLE_SIZE / 2}

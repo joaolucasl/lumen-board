@@ -44,14 +44,14 @@
     "/home/luke/Code/lumen-board/src/constants/index.ts": {
       "timestamp": 1766410196240.977
     },
+    "/home/luke/Code/lumen-board/node_modules/.pnpm/react@19.2.3/node_modules/react/cjs/react-jsx-runtime.production.js": {
+      "timestamp": 1765806311045.22
+    },
     "/home/luke/Code/lumen-board/node_modules/.pnpm/scheduler@0.27.0/node_modules/scheduler/index.js": {
       "timestamp": 1765806313885.192
     },
     "/home/luke/Code/lumen-board/node_modules/.pnpm/react-dom@19.2.3_react@19.2.3/node_modules/react-dom/index.js": {
       "timestamp": 1765806311169.2188
-    },
-    "/home/luke/Code/lumen-board/node_modules/.pnpm/react@19.2.3/node_modules/react/cjs/react-jsx-runtime.production.js": {
-      "timestamp": 1765806311045.22
     },
     "/home/luke/Code/lumen-board/src/components/canvas/InfiniteCanvas.tsx": {
       "timestamp": 1766407788296.0347
@@ -68,32 +68,41 @@
     "/home/luke/Code/lumen-board/src/components/ErrorBoundary.tsx": {
       "timestamp": 1766405966532.6619
     },
-    "/home/luke/Code/lumen-board/src/components/ui/ZoomControls.tsx": {
-      "timestamp": 1766235994578.308
-    },
     "/home/luke/Code/lumen-board/src/components/layers/GridLayer.tsx": {
       "timestamp": 1766236187080.8044
-    },
-    "/home/luke/Code/lumen-board/src/components/ui/PropertiesPanel.tsx": {
-      "timestamp": 1766235970084.7927
-    },
-    "/home/luke/Code/lumen-board/src/components/ui/Toolbar.tsx": {
-      "timestamp": 1766235916689.3225
-    },
-    "/home/luke/Code/lumen-board/src/utils/scene/index.ts": {
-      "timestamp": 1766404907809.3923
     },
     "/home/luke/Code/lumen-board/src/hooks/useInfiniteCanvasApi.ts": {
       "timestamp": 1766410402668.8538
     },
+    "/home/luke/Code/lumen-board/src/components/ui/ZoomControls.tsx": {
+      "timestamp": 1766235994578.308
+    },
+    "/home/luke/Code/lumen-board/src/components/ui/PropertiesPanel.tsx": {
+      "timestamp": 1766235970084.7927
+    },
+    "/home/luke/Code/lumen-board/src/utils/scene/index.ts": {
+      "timestamp": 1766404907809.3923
+    },
+    "/home/luke/Code/lumen-board/src/components/ui/Toolbar.tsx": {
+      "timestamp": 1766235916689.3225
+    },
     "/home/luke/Code/lumen-board/src/components/canvas/ConnectionPreview.tsx": {
       "timestamp": 1766413082073.6553
     },
-    "/home/luke/Code/lumen-board/src/hooks/useSvgCanvasInteractions.ts": {
-      "timestamp": 1766413482732.444
+    "/home/luke/Code/lumen-board/src/components/ui/Icons.tsx": {
+      "timestamp": 1766235859241.3093
     },
     "/home/luke/Code/lumen-board/src/components/canvas/ResizeHandles.tsx": {
-      "timestamp": 1766236461484.5803
+      "timestamp": 1766417139672.6938
+    },
+    "/home/luke/Code/lumen-board/src/utils/scene/elements.ts": {
+      "timestamp": 1766061340589.3171
+    },
+    "/home/luke/Code/lumen-board/src/utils/scene/connections.ts": {
+      "timestamp": 1766061342257.37
+    },
+    "/home/luke/Code/lumen-board/src/hooks/useSvgCanvasInteractions.ts": {
+      "timestamp": 1766413482732.444
     },
     "/home/luke/Code/lumen-board/src/components/elements/ConnectionRenderer.tsx": {
       "timestamp": 1766413082073.6553
@@ -101,23 +110,14 @@
     "/home/luke/Code/lumen-board/src/components/elements/ElementRenderer.tsx": {
       "timestamp": 1766405986157.3599
     },
-    "/home/luke/Code/lumen-board/src/utils/scene/connections.ts": {
-      "timestamp": 1766061342257.37
-    },
-    "/home/luke/Code/lumen-board/src/utils/scene/elements.ts": {
-      "timestamp": 1766061340589.3171
-    },
-    "/home/luke/Code/lumen-board/src/components/ui/Icons.tsx": {
-      "timestamp": 1766235859241.3093
-    },
-    "/home/luke/Code/lumen-board/src/utils/viewport.ts": {
-      "timestamp": 1766413082073.6553
-    },
     "/home/luke/Code/lumen-board/src/utils/ids.ts": {
       "timestamp": 1766061000526.2012
     },
     "/home/luke/Code/lumen-board/src/utils/elementDefaults.ts": {
       "timestamp": 1766061000770.2095
+    },
+    "/home/luke/Code/lumen-board/src/utils/viewport.ts": {
+      "timestamp": 1766413082073.6553
     },
     "/home/luke/Code/lumen-board/src/utils/math.ts": {
       "timestamp": 1766413462192.4802

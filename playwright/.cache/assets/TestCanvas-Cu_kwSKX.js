@@ -1,4 +1,4 @@
-import { g as getDefaultExportFromCjs, r as reactExports, R as React } from './index-Bwt6JDL4.js';
+import { g as getDefaultExportFromCjs, r as reactExports, R as React } from './index-BROLtv0H.js';
 
 var jsxRuntime$2 = {exports: {}};
 
@@ -1182,6 +1182,7 @@ const ResizeHandles = ({ element, onPointerDown }) => {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
       "rect",
       {
+        "data-handle": handle.type,
         "data-resize-handle": handle.type,
         "data-resize-target": element.id,
         x: pos.x - HANDLE_SIZE / 2,
@@ -1706,4 +1707,4 @@ function TestCanvas({
 }
 
 export { TestCanvas };
-//# sourceMappingURL=TestCanvas-7ubSxuyA.js.map
+//# sourceMappingURL=TestCanvas-Cu_kwSKX.js.map

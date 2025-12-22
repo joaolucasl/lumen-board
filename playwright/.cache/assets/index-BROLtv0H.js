@@ -17634,8 +17634,8 @@ window.playwrightUpdate = async (rootElement, component) => {
   entry.setRenderer(() => __pwRender(component));
 };
 
-const _home_luke_Code_lumen_board_e2e_fixtures_TestCanvas_TestCanvas = () => __vitePreload(() => import('./TestCanvas-7ubSxuyA.js'),true              ?[]:void 0).then((mod) => mod.TestCanvas);
+const _home_luke_Code_lumen_board_e2e_fixtures_TestCanvas_TestCanvas = () => __vitePreload(() => import('./TestCanvas-Cu_kwSKX.js'),true              ?[]:void 0).then((mod) => mod.TestCanvas);
 __pwRegistry.initialize({ _home_luke_Code_lumen_board_e2e_fixtures_TestCanvas_TestCanvas });
 
 export { React as R, getDefaultExportFromCjs as g, reactExports as r };
-//# sourceMappingURL=index-Bwt6JDL4.js.map
+//# sourceMappingURL=index-BROLtv0H.js.map
