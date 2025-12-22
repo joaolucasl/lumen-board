@@ -1,5 +1,12 @@
 
+/**
+ * Supported element types in the canvas.
+ */
 export type ElementType = 'rectangle' | 'ellipse' | 'text' | 'custom' | 'diamond';
+
+/**
+ * Available resize handle positions.
+ */
 export type ResizeHandleType =
   | 'top-left'
   | 'top-center'
@@ -10,54 +17,75 @@ export type ResizeHandleType =
   | 'bottom-center'
   | 'bottom-right';
 
+/**
+ * Represents the current view state of the canvas (position and zoom).
+ */
 export interface ViewState {
-  x: number;
-  y: number;
-  zoom: number;
+  readonly x: number;
+  readonly y: number;
+  readonly zoom: number;
 }
 
+/**
+ * Represents a single element on the canvas.
+ */
 export interface CanvasElement {
-  id: string;
-  type: ElementType;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  rotation: number;
-  opacity: number;
-  locked: boolean;
-  backgroundColor?: string;
-  strokeColor?: string;
-  strokeWidth?: number;
-  text?: string;
-  componentType?: string;
-  props?: Record<string, any>;
+  readonly id: string;
+  readonly type: ElementType;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly rotation: number;
+  readonly opacity: number;
+  readonly locked: boolean;
+  readonly backgroundColor?: string;
+  readonly strokeColor?: string;
+  readonly strokeWidth?: number;
+  readonly text?: string;
+  readonly componentType?: string;
+  readonly props?: Record<string, unknown>;
 }
 
+/**
+ * Connection handle positions.
+ */
 export type HandleType = 'top' | 'right' | 'bottom' | 'left';
 
+/**
+ * Represents a connection between two elements.
+ */
 export interface Connection {
-  id: string;
-  sourceId: string;
-  targetId: string;
-  sourceHandle?: HandleType;
-  targetHandle?: HandleType;
-  style?: {
-    strokeColor: string;
-    width: number;
-    curvature: number;
+  readonly id: string;
+  readonly sourceId: string;
+  readonly targetId: string;
+  readonly sourceHandle?: HandleType;
+  readonly targetHandle?: HandleType;
+  readonly style?: {
+    readonly strokeColor: string;
+    readonly width: number;
+    readonly curvature: number;
   };
 }
 
+/**
+ * Complete state of the scene including elements, connections, and view.
+ */
 export interface SceneState {
-  version: number;
-  view: ViewState;
-  elements: Record<string, CanvasElement>;
-  connections: Connection[];
+  readonly version: number;
+  readonly view: ViewState;
+  readonly elements: Record<string, CanvasElement>;
+  readonly connections: Connection[];
 }
 
+/**
+ * Available tools for interaction.
+ */
 export type Tool = 'pointer' | 'hand' | 'rectangle' | 'ellipse' | 'diamond' | 'text' | 'connection' | 'eraser';
 
+/**
+ * Options for creating a new element.
+ */
 export interface CreateElementOptions {
   type: ElementType;
   x?: number;
@@ -71,11 +99,14 @@ export interface CreateElementOptions {
   rotation?: number;
   text?: string;
   componentType?: string;
-  props?: Record<string, any>;
+  props?: Record<string, unknown>;
   locked?: boolean;
   id?: string;
 }
 
+/**
+ * Options for creating a new connection.
+ */
 export interface CreateConnectionOptions {
   sourceId: string;
   targetId: string;
@@ -89,6 +120,9 @@ export interface CreateConnectionOptions {
   id?: string;
 }
 
+/**
+ * Imperative API for controlling the InfiniteCanvas.
+ */
 export interface InfiniteCanvasRef {
   exportJson: () => SceneState;
   importJson: (data: SceneState) => void;

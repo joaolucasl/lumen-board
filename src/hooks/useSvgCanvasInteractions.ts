@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import type React from 'react';
 import type { RefObject } from 'react';
-import type { CanvasElement, ResizeHandleType, SceneState, Tool } from '../types';
+import type { CanvasElement, ElementType, ResizeHandleType, SceneState, Tool } from '../types';
 import { GRID_SIZE, MIN_ELEMENT_SIZE } from '../constants';
 import { createConnectionId, createElementId } from '../utils/ids';
 import { screenToWorldPoint } from '../utils/viewport';
@@ -219,7 +219,7 @@ export function useSvgCanvasInteractions({
         const id = createElementId(false);
         const newElement: CanvasElement = {
           id,
-          type: activeTool as any,
+          type: activeTool as ElementType,
           x: snapToGrid ? Math.round(worldPos.x / GRID_SIZE) * GRID_SIZE : worldPos.x,
           y: snapToGrid ? Math.round(worldPos.y / GRID_SIZE) * GRID_SIZE : worldPos.y,
           width: 10,
