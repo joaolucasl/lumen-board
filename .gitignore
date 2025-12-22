@@ -16,6 +16,12 @@ dist-ssr
 coverage
 *.lcov
 
+# Playwright
+test-results
+playwright-report
+*.trace
+.playwright
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
