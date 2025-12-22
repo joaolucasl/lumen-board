@@ -18,6 +18,7 @@ interface InfiniteCanvasProps {
     grid?: boolean;
     snapToGrid?: boolean;
     theme?: 'light' | 'dark';
+    keepToolActive?: boolean;
   };
   uiConfig?: {
     showToolbar?: boolean;
@@ -45,7 +46,8 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<Tool>('pointer');
-  const [keepToolActive, setKeepToolActive] = useState(false);
+  // Removed internal keepToolActive state, now derived from config
+  const keepToolActive = config.keepToolActive ?? false;
 
   // Keep refs in sync for imperative API methods that need current values
   const sceneRef = useRef<SceneState>(scene);
@@ -176,7 +178,8 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
           activeTool={activeTool} 
           onToolSelect={setActiveTool} 
           keepToolActive={keepToolActive}
-          onToggleKeepToolActive={() => setKeepToolActive((v) => !v)}
+          // Removing internal toggle for now as it's controlled via config
+          onToggleKeepToolActive={() => {}}
         />
       )}
 

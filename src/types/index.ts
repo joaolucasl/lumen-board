@@ -100,19 +100,19 @@ export interface InfiniteCanvasRef {
   // EditorAPI - Elements
   createElement: (options: CreateElementOptions) => CanvasElement;
   createElements: (options: CreateElementOptions[]) => CanvasElement[];
-  updateElement: (id: string, updates: Partial<CanvasElement>) => CanvasElement;
+  updateElement: (id: string, updates: Partial<CanvasElement>) => CanvasElement | undefined;
   updateElements: (updates: Array<{ id: string } & Partial<CanvasElement>>) => CanvasElement[];
-  deleteElement: (id: string) => void;
-  deleteElements: (ids: string[]) => void;
+  deleteElement: (id: string) => boolean;
+  deleteElements: (ids: string[]) => boolean;
   getElement: (id: string) => CanvasElement | undefined;
   getElements: (ids?: string[]) => CanvasElement[];
 
   // EditorAPI - Connections
   createConnection: (options: CreateConnectionOptions) => Connection;
   createConnections: (options: CreateConnectionOptions[]) => Connection[];
-  updateConnection: (id: string, updates: Partial<Connection>) => Connection;
-  deleteConnection: (id: string) => void;
-  deleteConnections: (ids: string[]) => void;
+  updateConnection: (id: string, updates: Partial<Connection>) => Connection | undefined;
+  deleteConnection: (id: string) => boolean;
+  deleteConnections: (ids: string[]) => boolean;
   getConnection: (id: string) => Connection | undefined;
   getConnections: (elementId?: string) => Connection[];
   getConnectionsBetween: (sourceId: string, targetId: string) => Connection[];
@@ -122,14 +122,14 @@ export interface InfiniteCanvasRef {
   getViewportBounds: () => { x: number; y: number; width: number; height: number };
   screenToWorld: (screenX: number, screenY: number) => { x: number; y: number };
   worldToScreen: (worldX: number, worldY: number) => { x: number; y: number };
-  panTo: (x: number, y: number, animate?: boolean) => void;
-  panToElement: (id: string, animate?: boolean) => void;
+  panTo: (x: number, y: number) => void;
+  panToElement: (id: string) => boolean;
   setZoom: (level: number, focalPoint?: { x: number; y: number }) => void;
 
   // EditorAPI - Selection
   selectAll: () => void;
   clearSelection: () => void;
   getSelectedIds: () => string[];
-  focusElement: (id: string, options?: { zoom?: number; animate?: boolean }) => void;
-  focusElements: (ids: string[], options?: { padding?: number; animate?: boolean }) => void;
+  focusElement: (id: string, options?: { zoom?: number }) => boolean;
+  focusElements: (ids: string[], options?: { padding?: number }) => boolean;
 }

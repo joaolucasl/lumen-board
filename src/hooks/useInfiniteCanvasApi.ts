@@ -138,22 +138,26 @@ export function useInfiniteCanvasApi({
       },
 
       updateElement: (id: string, updates: Partial<CanvasElement>) => {
-        let updatedElement: CanvasElement;
+        let updatedElement: CanvasElement | undefined;
 
         updateScene((prev) => {
           const element = prev.elements[id];
           if (!element) {
-            updatedElement = element;
             return prev;
           }
-          updatedElement = { ...element, ...updates };
+          
+          // Basic validation/clamping
+          const newWidth = updates.width !== undefined ? Math.max(1, updates.width) : element.width;
+          const newHeight = updates.height !== undefined ? Math.max(1, updates.height) : element.height;
+          
+          updatedElement = { ...element, ...updates, width: newWidth, height: newHeight };
           return {
             ...prev,
             elements: { ...prev.elements, [id]: updatedElement },
           };
         });
 
-        return updatedElement! || sceneRef.current.elements[id];
+        return updatedElement || sceneRef.current.elements[id];
       },
 
       updateElements: (updates: Array<{ id: string } & Partial<CanvasElement>>) => {
@@ -169,6 +173,8 @@ export function useInfiniteCanvasApi({
       },
 
       deleteElement: (id: string) => {
+        if (!sceneRef.current.elements[id]) return false;
+
         updateScene((prev) => {
           const nextElements = deleteElementsFromMap(prev.elements, [id]);
           const nextConnections = deleteConnectionsForElements(prev.connections, [id]);
@@ -178,15 +184,22 @@ export function useInfiniteCanvasApi({
         if (selectedIdsRef.current.includes(id)) {
           handleSelection(selectedIdsRef.current.filter((sid) => sid !== id));
         }
+        
+        return true;
       },
 
       deleteElements: (ids: string[]) => {
+        const existingIds = ids.filter(id => Boolean(sceneRef.current.elements[id]));
+        if (existingIds.length === 0) return false;
+
         updateScene((prev) => {
-          const nextElements = deleteElementsFromMap(prev.elements, ids);
-          const nextConnections = deleteConnectionsForElements(prev.connections, ids);
+          const nextElements = deleteElementsFromMap(prev.elements, existingIds);
+          const nextConnections = deleteConnectionsForElements(prev.connections, existingIds);
           return { ...prev, elements: nextElements, connections: nextConnections };
         });
-        handleSelection(selectedIdsRef.current.filter((sid) => !ids.includes(sid)));
+        handleSelection(selectedIdsRef.current.filter((sid) => !existingIds.includes(sid)));
+        
+        return true;
       },
 
       getElement: (id: string) => sceneRef.current.elements[id],
@@ -241,7 +254,7 @@ export function useInfiniteCanvasApi({
       },
 
       updateConnection: (id: string, updates: Partial<Connection>) => {
-        let updatedConnection: Connection;
+        let updatedConnection: Connection | undefined;
 
         updateScene((prev) => {
           const idx = prev.connections.findIndex((c) => c.id === id);
@@ -254,21 +267,29 @@ export function useInfiniteCanvasApi({
           return { ...prev, connections: newConnections };
         });
 
-        return updatedConnection! || sceneRef.current.connections.find((c) => c.id === id);
+        return updatedConnection || sceneRef.current.connections.find((c) => c.id === id);
       },
 
       deleteConnection: (id: string) => {
+        const exists = sceneRef.current.connections.some(c => c.id === id);
+        if (!exists) return false;
+
         updateScene((prev) => ({
           ...prev,
           connections: prev.connections.filter((c) => c.id !== id),
         }));
+        return true;
       },
 
       deleteConnections: (ids: string[]) => {
+        const existingIds = ids.filter(id => sceneRef.current.connections.some(c => c.id === id));
+        if (existingIds.length === 0) return false;
+
         updateScene((prev) => ({
           ...prev,
-          connections: prev.connections.filter((c) => !ids.includes(c.id)),
+          connections: prev.connections.filter((c) => !existingIds.includes(c.id)),
         }));
+        return true;
       },
 
       getConnection: (id: string) => sceneRef.current.connections.find((c) => c.id === id),
@@ -304,7 +325,7 @@ export function useInfiniteCanvasApi({
       screenToWorld,
       worldToScreen,
 
-      panTo: (x: number, y: number, animate = false) => {
+      panTo: (x: number, y: number) => {
         const rect = containerRef.current?.getBoundingClientRect();
         if (!rect) return;
 
@@ -321,15 +342,15 @@ export function useInfiniteCanvasApi({
         }));
       },
 
-      panToElement: (id: string, animate = false) => {
+      panToElement: (id: string) => {
         const el = sceneRef.current.elements[id];
-        if (!el) return;
+        if (!el) return false;
 
         const centerX = el.x + el.width / 2;
         const centerY = el.y + el.height / 2;
 
         const rect = containerRef.current?.getBoundingClientRect();
-        if (!rect) return;
+        if (!rect) return false;
 
         const viewCX = rect.width / 2;
         const viewCY = rect.height / 2;
@@ -342,6 +363,7 @@ export function useInfiniteCanvasApi({
             y: viewCY - centerY * s.view.zoom,
           },
         }));
+        return true;
       },
 
       setZoom: (level: number, focalPoint?: { x: number; y: number }) => {
@@ -375,12 +397,12 @@ export function useInfiniteCanvasApi({
 
       focusElement: (id: string, options = {}) => {
         const el = sceneRef.current.elements[id];
-        if (!el) return;
+        if (!el) return false;
 
         handleSelection([id]);
 
         const rect = containerRef.current?.getBoundingClientRect();
-        if (!rect) return;
+        if (!rect) return false;
 
         updateScene((s) => {
           const zoom = (options as { zoom?: number }).zoom ?? s.view.zoom;
@@ -396,10 +418,11 @@ export function useInfiniteCanvasApi({
             },
           };
         });
+        return true;
       },
 
       focusElements: (ids: string[], options = {}) => {
-        if (ids.length === 0) return;
+        if (ids.length === 0) return false;
 
         handleSelection(ids);
 
@@ -420,10 +443,10 @@ export function useInfiniteCanvasApi({
           }
         });
 
-        if (!found) return;
+        if (!found) return false;
 
         const rect = containerRef.current?.getBoundingClientRect();
-        if (!rect) return;
+        if (!rect) return false;
 
         const padding = (options as { padding?: number }).padding ?? 50;
         const contentW = maxX - minX + padding * 2;
@@ -444,6 +467,7 @@ export function useInfiniteCanvasApi({
             zoom,
           },
         }));
+        return true;
       },
     };
   }, [containerRef, handleSelection, sceneRef, selectedIdsRef, updateScene]);
