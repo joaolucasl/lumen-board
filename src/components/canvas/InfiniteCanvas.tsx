@@ -11,26 +11,113 @@ import PropertiesPanel from '../ui/PropertiesPanel';
 import ZoomControls from '../ui/ZoomControls';
 import { ErrorBoundary } from '../ErrorBoundary';
 
+/**
+ * Props for the InfiniteCanvas component.
+ */
 interface InfiniteCanvasProps {
+  /**
+   * Initial state of the scene (elements, connections, view).
+   * @default INITIAL_STATE
+   */
   initialData?: SceneState;
+  
+  /**
+   * Configuration options for the canvas behavior and appearance.
+   */
   config?: {
+    /**
+     * If true, the canvas is in read-only mode (no editing allowed).
+     * @default false
+     */
     readonly?: boolean;
+    /**
+     * Whether to show the background grid.
+     * @default true
+     */
     grid?: boolean;
+    /**
+     * Whether to snap elements to the grid when moving/resizing.
+     * @default false
+     */
     snapToGrid?: boolean;
+    /**
+     * UI theme (not fully implemented yet).
+     * @default 'light'
+     */
     theme?: 'light' | 'dark';
+    /**
+     * Whether to keep the selected tool active after use (instead of switching back to pointer).
+     * @default false
+     */
     keepToolActive?: boolean;
   };
+
+  /**
+   * Configuration for the built-in UI components.
+   */
   uiConfig?: {
+    /**
+     * Whether to show the toolbar.
+     * @default true
+     */
     showToolbar?: boolean;
+    /**
+     * Whether to show the zoom controls.
+     * @default true
+     */
     showZoomControls?: boolean;
+    /**
+     * Whether to show the properties panel when elements are selected.
+     * @default true
+     */
     showPropertiesPanel?: boolean;
   };
+
+  /**
+   * Custom React components to render for specific element types.
+   * Key matches the `componentType` of the element.
+   */
   components?: Record<string, React.FC<any>>;
+
+  /**
+   * Callback fired when the scene state changes (elements, connections, etc.).
+   */
   onChange?: (data: SceneState) => void;
+
+  /**
+   * Callback fired when the selection changes.
+   */
   onSelectionChange?: (selectedIds: string[]) => void;
+
+  /**
+   * Callback fired when a new element is added.
+   */
   onElementAdd?: (element: CanvasElement) => void;
 }
 
+/**
+ * The main InfiniteCanvas component.
+ * 
+ * Renders an interactive infinite canvas with support for:
+ * - Panning and zooming
+ * - Creating, moving, resizing, and deleting elements
+ * - Connecting elements
+ * - Undo/redo (via state management)
+ * - Custom components
+ * 
+ * This component exposes an imperative API via a ref.
+ * 
+ * @example
+ * ```tsx
+ * const ref = useRef<InfiniteCanvasRef>(null);
+ * 
+ * <InfiniteCanvas
+ *   ref={ref}
+ *   initialData={myScene}
+ *   onChange={setMyScene}
+ * />
+ * ```
+ */
 const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props, ref) => {
   const { 
     initialData = INITIAL_STATE, 
