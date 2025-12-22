@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useState, useCallback, useRef, useImperativeHandle, forwardRef, useEffect, useMemo } from 'react';
 import { SceneState, CanvasElement, Tool, InfiniteCanvasRef } from '../../types';
 import { INITIAL_STATE } from '../../constants';
 import { useInfiniteCanvasApi } from '../../hooks/useInfiniteCanvasApi';
@@ -39,37 +39,42 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
     onSelectionChange
   } = props;
 
-  // Use refs for state to support synchronous imperative API
-  const sceneRef = useRef<SceneState>(initialData);
-  const selectedIdsRef = useRef<string[]>([]);
-  const [, setTick] = useState(0); // Force render
+  // Proper React state management
+  const [scene, setScene] = useState<SceneState>(initialData);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<Tool>('pointer');
   const [keepToolActive, setKeepToolActive] = useState(false);
 
-  const forceUpdate = useCallback(() => setTick(t => t + 1), []);
+  // Keep refs in sync for imperative API methods that need current values
+  const sceneRef = useRef<SceneState>(scene);
+  const selectedIdsRef = useRef<string[]>(selectedIds);
+  sceneRef.current = scene;
+  selectedIdsRef.current = selectedIds;
 
   // Sync with initialData if provided externally
   useEffect(() => {
     if (initialData) {
-      sceneRef.current = initialData;
-      forceUpdate();
+      setScene(initialData);
     }
-  }, [initialData, forceUpdate]);
+  }, [initialData]);
 
   const updateScene = useCallback((updater: (prev: SceneState) => SceneState) => {
-    const next = updater(sceneRef.current);
-    sceneRef.current = next;
-    onChange?.(next);
-    forceUpdate();
-    return next;
-  }, [onChange, forceUpdate]);
+    let nextScene: SceneState;
+    setScene((prev) => {
+      nextScene = updater(prev);
+      return nextScene;
+    });
+    // Note: onChange is called with the new state, but due to React's batching,
+    // the state may not be immediately available via ref after this call
+    onChange?.(nextScene!);
+    return nextScene!;
+  }, [onChange]);
 
   const handleSelection = useCallback((ids: string[]) => {
-    selectedIdsRef.current = ids;
+    setSelectedIds(ids);
     onSelectionChange?.(ids);
-    forceUpdate();
-  }, [onSelectionChange, forceUpdate]);
+  }, [onSelectionChange]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -127,11 +132,11 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
       ref={containerRef}
       className={`lb-canvas-container ${activeTool === 'hand' ? 'lb-canvas-container--hand' : 'lb-canvas-container--default'}`}
     >
-      {config.grid !== false && <GridLayer view={sceneRef.current.view} />}
+      {config.grid !== false && <GridLayer view={scene.view} />}
       
       <SVGCanvas 
-        scene={sceneRef.current}
-        selectedIds={selectedIdsRef.current}
+        scene={scene}
+        selectedIds={selectedIds}
         activeTool={activeTool}
         keepToolActive={keepToolActive}
         onUpdateScene={updateScene}
@@ -152,20 +157,20 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
 
       {uiConfig.showZoomControls && (
         <ZoomControls 
-          zoom={sceneRef.current.view.zoom} 
+          zoom={scene.view.zoom} 
           onZoomIn={() => api.zoomIn()} 
           onZoomOut={() => api.zoomOut()}
           onFitView={() => api.fitView()}
         />
       )}
 
-      {uiConfig.showPropertiesPanel && selectedIdsRef.current.length > 0 && (
+      {uiConfig.showPropertiesPanel && selectedIds.length > 0 && (
         <PropertiesPanel 
-          elements={selectedIdsRef.current.map(id => sceneRef.current.elements[id]).filter(Boolean)}
+          elements={selectedIds.map(id => scene.elements[id]).filter(Boolean)}
           onUpdate={(updates) => {
             updateScene(prev => {
               const newElements = { ...prev.elements };
-              selectedIdsRef.current.forEach(id => {
+              selectedIds.forEach(id => {
                 if (newElements[id]) {
                   newElements[id] = { ...newElements[id], ...updates };
                 }
