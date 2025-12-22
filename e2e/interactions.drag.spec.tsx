@@ -118,9 +118,7 @@ test.describe('Drag and Drop Interactions', () => {
     expect(finalScene!.elements['el-2'].y).toBeGreaterThan(100);
   });
 
-  test.skip('does not drag locked element', async ({ mount, page }) => {
-    // KNOWN ISSUE: Lock feature not yet implemented
-    // This test documents the expected behavior
+  test('does not drag locked element', async ({ mount, page }) => {
     const initialScene: SceneState = {
       ...INITIAL_STATE,
       elements: {

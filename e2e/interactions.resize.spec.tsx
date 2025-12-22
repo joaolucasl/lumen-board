@@ -379,8 +379,7 @@ test.describe('Resize Handle Interactions', () => {
     expect(finalScene!.elements['el-1'].height % 20).toBe(0);
   });
 
-  test.skip('does not resize locked element', async ({ mount, page }) => {
-    // KNOWN ISSUE: Lock feature not yet implemented
+  test('does not resize locked element', async ({ mount, page }) => {
     const initialScene: SceneState = {
       ...INITIAL_STATE,
       elements: {

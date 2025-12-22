@@ -379,8 +379,7 @@ test.describe('Selection Interactions', () => {
     expect(finalScene!.elements['el-3']).toBeDefined();
   });
 
-  test.skip('cannot select locked element', async ({ mount, page }) => {
-    // KNOWN ISSUE: Lock feature not yet implemented
+  test('can select locked element', async ({ mount, page }) => {
     const initialScene: SceneState = {
       ...INITIAL_STATE,
       elements: {
@@ -410,8 +409,9 @@ test.describe('Selection Interactions', () => {
     await element.click();
     await page.waitForTimeout(100);
 
-    // Locked element should not be selectable
-    expect(selectedIds).toHaveLength(0);
+    // Locked element should be selectable but not movable
+    expect(selectedIds).toHaveLength(1);
+    expect(selectedIds[0]).toBe('el-1');
   });
 
   test('selection box selects multiple elements', async ({ mount, page }) => {

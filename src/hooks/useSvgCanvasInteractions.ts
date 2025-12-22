@@ -162,11 +162,15 @@ export function useSvgCanvasInteractions({
         if (!selectedIds.includes(elementId)) {
           onSelect(e.shiftKey ? [...selectedIds, elementId] : [elementId]);
         }
-        setDragState({
-          type: 'element',
-          startPos: worldPos,
-          initialElements: { ...elements },
-        });
+        // Only start drag if element is not locked
+        const element = elements[elementId];
+        if (!element?.locked) {
+          setDragState({
+            type: 'element',
+            startPos: worldPos,
+            initialElements: { ...elements },
+          });
+        }
       } else if (['rectangle', 'ellipse', 'diamond', 'text'].includes(activeTool)) {
         const id = createElementId(false);
         const newElement: CanvasElement = {
@@ -299,7 +303,8 @@ export function useSvgCanvasInteractions({
             const nextElements = { ...s.elements };
             selectedIds.forEach((id) => {
               const initial = dragState.initialElements?.[id];
-              if (initial) {
+              const element = s.elements[id];
+              if (initial && !element?.locked) {
                 let nx = initial.x + dx;
                 let ny = initial.y + dy;
                 if (snapToGrid) {
