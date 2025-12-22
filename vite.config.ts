@@ -3,6 +3,7 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import dts from 'vite-plugin-dts';
 import { copyFileSync } from 'fs';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // Plugin to copy CSS file during library build
 const copyCssPlugin = () => ({
@@ -39,6 +40,11 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist',
       }),
       isLibBuild && copyCssPlugin(),
+      isLibBuild && visualizer({
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
     ].filter(Boolean),
     resolve: {
       alias: {

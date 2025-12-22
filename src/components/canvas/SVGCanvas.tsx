@@ -1,5 +1,5 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { SceneState, CanvasElement, Tool } from '../../types';
 import ElementRenderer from '../elements/ElementRenderer';
 import ConnectionRenderer from '../elements/ConnectionRenderer';
@@ -54,8 +54,31 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
 
   const transform = `translate(${view.x}, ${view.y}) scale(${view.zoom})`;
 
-  const singleSelectedElement =
-    selectedIds.length === 1 ? elements[selectedIds[0]] : undefined;
+  // Memoize single selected element computation (Fix 6.3)
+  const singleSelectedElement = useMemo(
+    () => (selectedIds.length === 1 ? elements[selectedIds[0]] : undefined),
+    [selectedIds, elements]
+  );
+
+  // Viewport culling: only render elements within viewport bounds (Fix 6.5)
+  const visibleElements = useMemo(() => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return Object.values(elements) as CanvasElement[];
+
+    // Calculate viewport bounds in world coordinates
+    const padding = 200; // Extra padding to avoid pop-in
+    const minX = (-view.x - padding) / view.zoom;
+    const minY = (-view.y - padding) / view.zoom;
+    const maxX = (rect.width - view.x + padding) / view.zoom;
+    const maxY = (rect.height - view.y + padding) / view.zoom;
+
+    return (Object.values(elements) as CanvasElement[]).filter((el) => {
+      // Check if element intersects with viewport
+      const elRight = el.x + el.width;
+      const elBottom = el.y + el.height;
+      return !(el.x > maxX || elRight < minX || el.y > maxY || elBottom < minY);
+    });
+  }, [elements, view, svgRef]);
 
   const isDragging = Boolean(dragState);
   const canvasCursor: React.CSSProperties['cursor'] = isDragging
@@ -93,9 +116,8 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
           />
         ))}
 
-        {/* Elements */}
-        {/* Fix: Explicitly cast Object.values(elements) to CanvasElement[] to ensure TypeScript recognizes the properties on 'el' */}
-        {(Object.values(elements) as CanvasElement[]).map(el => (
+        {/* Elements (with viewport culling) */}
+        {visibleElements.map(el => (
           <ElementRenderer 
             key={el.id} 
             element={el} 

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import type React from 'react';
 import type { RefObject } from 'react';
 import type { CanvasElement, ElementType, ResizeHandleType, SceneState, Tool } from '../types';
@@ -159,6 +159,19 @@ export function useSvgCanvasInteractions({
     currentPos: { x: number; y: number };
   } | null>(null);
 
+  // RAF throttling for pointer move events
+  const rafIdRef = useRef<number | null>(null);
+  const pendingMoveEventRef = useRef<React.PointerEvent | null>(null);
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+      }
+    };
+  }, []);
+
   const screenToWorld = useCallback(
     (clientX: number, clientY: number) => {
       const rect = svgRef.current?.getBoundingClientRect();
@@ -310,80 +323,93 @@ export function useSvgCanvasInteractions({
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent) => {
-      if (pendingConnection) {
-        const worldPos = screenToWorld(e.clientX, e.clientY);
-        setPendingConnection({ ...pendingConnection, currentPos: worldPos });
-      }
+      // Store the event for RAF processing
+      pendingMoveEventRef.current = e;
 
-      if (!dragState) return;
+      // If RAF is already scheduled, skip
+      if (rafIdRef.current !== null) return;
 
-      if (dragState.type === 'pan') {
-        const dx = e.clientX - dragState.startPos.x;
-        const dy = e.clientY - dragState.startPos.y;
-        onUpdateScene((s) => ({
-          ...s,
-          view: { ...s.view, x: s.view.x + dx, y: s.view.y + dy },
-        }));
-        setDragState({ ...dragState, startPos: { x: e.clientX, y: e.clientY } });
-      } else if (dragState.type === 'element') {
-        const worldPos = screenToWorld(e.clientX, e.clientY);
-        const dx = worldPos.x - dragState.startPos.x;
-        const dy = worldPos.y - dragState.startPos.y;
+      // Schedule update on next frame
+      rafIdRef.current = requestAnimationFrame(() => {
+        rafIdRef.current = null;
+        const event = pendingMoveEventRef.current;
+        if (!event) return;
 
-        onUpdateScene((s) => {
-          const nextElements = { ...s.elements };
-          selectedIds.forEach((id) => {
-            const initial = dragState.initialElements?.[id];
-            if (initial) {
-              let nx = initial.x + dx;
-              let ny = initial.y + dy;
-              if (snapToGrid) {
-                nx = Math.round(nx / GRID_SIZE) * GRID_SIZE;
-                ny = Math.round(ny / GRID_SIZE) * GRID_SIZE;
+        if (pendingConnection) {
+          const worldPos = screenToWorld(event.clientX, event.clientY);
+          setPendingConnection({ ...pendingConnection, currentPos: worldPos });
+        }
+
+        if (!dragState) return;
+
+        if (dragState.type === 'pan') {
+          const dx = event.clientX - dragState.startPos.x;
+          const dy = event.clientY - dragState.startPos.y;
+          onUpdateScene((s) => ({
+            ...s,
+            view: { ...s.view, x: s.view.x + dx, y: s.view.y + dy },
+          }));
+          setDragState({ ...dragState, startPos: { x: event.clientX, y: event.clientY } });
+        } else if (dragState.type === 'element') {
+          const worldPos = screenToWorld(event.clientX, event.clientY);
+          const dx = worldPos.x - dragState.startPos.x;
+          const dy = worldPos.y - dragState.startPos.y;
+
+          onUpdateScene((s) => {
+            const nextElements = { ...s.elements };
+            selectedIds.forEach((id) => {
+              const initial = dragState.initialElements?.[id];
+              if (initial) {
+                let nx = initial.x + dx;
+                let ny = initial.y + dy;
+                if (snapToGrid) {
+                  nx = Math.round(nx / GRID_SIZE) * GRID_SIZE;
+                  ny = Math.round(ny / GRID_SIZE) * GRID_SIZE;
+                }
+                nextElements[id] = { ...nextElements[id], x: nx, y: ny };
               }
-              nextElements[id] = { ...nextElements[id], x: nx, y: ny };
-            }
+            });
+            return { ...s, elements: nextElements };
           });
-          return { ...s, elements: nextElements };
-        });
-      } else if (dragState.type === 'create' && dragState.targetId) {
-        const worldPos = screenToWorld(e.clientX, e.clientY);
-        const width = Math.max(20, worldPos.x - dragState.startPos.x);
-        const height = Math.max(20, worldPos.y - dragState.startPos.y);
-        onUpdateScene((s) => ({
-          ...s,
-          elements: {
-            ...s.elements,
-            [dragState.targetId!]: {
-              ...s.elements[dragState.targetId!],
-              width,
-              height,
+        } else if (dragState.type === 'create' && dragState.targetId) {
+          const worldPos = screenToWorld(event.clientX, event.clientY);
+          const width = Math.max(20, worldPos.x - dragState.startPos.x);
+          const height = Math.max(20, worldPos.y - dragState.startPos.y);
+          onUpdateScene((s) => ({
+            ...s,
+            elements: {
+              ...s.elements,
+              [dragState.targetId!]: {
+                ...s.elements[dragState.targetId!],
+                width,
+                height,
+              },
             },
-          },
-        }));
-      } else if (dragState.type === 'resize' && dragState.targetId && dragState.resizeHandle && dragState.initialDimensions) {
-        const worldPos = screenToWorld(e.clientX, e.clientY);
-        const dx = worldPos.x - dragState.startPos.x;
-        const dy = worldPos.y - dragState.startPos.y;
+          }));
+        } else if (dragState.type === 'resize' && dragState.targetId && dragState.resizeHandle && dragState.initialDimensions) {
+          const worldPos = screenToWorld(event.clientX, event.clientY);
+          const dx = worldPos.x - dragState.startPos.x;
+          const dy = worldPos.y - dragState.startPos.y;
 
-        onUpdateScene((s) => {
-          const nextElements = { ...s.elements };
-          const initial = dragState.initialElements?.[dragState.targetId];
-          if (!initial) {
-            return s;
-          }
+          onUpdateScene((s) => {
+            const nextElements = { ...s.elements };
+            const initial = dragState.initialElements?.[dragState.targetId];
+            if (!initial) {
+              return s;
+            }
 
-          const updated = computeResize(
-            dragState.resizeHandle,
-            dragState.initialDimensions,
-            { dx, dy },
-            { snapToGrid: false }
-          );
+            const updated = computeResize(
+              dragState.resizeHandle,
+              dragState.initialDimensions,
+              { dx, dy },
+              { snapToGrid: false }
+            );
 
-          nextElements[dragState.targetId] = { ...nextElements[dragState.targetId], ...updated };
-          return { ...s, elements: nextElements };
-        });
-      }
+            nextElements[dragState.targetId] = { ...nextElements[dragState.targetId], ...updated };
+            return { ...s, elements: nextElements };
+          });
+        }
+      });
     },
     [dragState, onUpdateScene, pendingConnection, screenToWorld, selectedIds, snapToGrid]
   );
