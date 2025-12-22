@@ -13,7 +13,14 @@ const ConnectionRenderer: React.FC<ConnectionRendererProps> = ({ connection, ele
   const source = elements[connection.sourceId];
   const target = elements[connection.targetId];
 
-  if (!source || !target) return null;
+  if (!source || !target) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(
+        `[LumenBoard] Connection ${connection.id} has missing ${!source ? 'source' : 'target'} element (source: ${connection.sourceId}, target: ${connection.targetId})`
+      );
+    }
+    return null;
+  }
 
   const getCenter = (el: CanvasElement) => ({
     x: el.x + el.width / 2,

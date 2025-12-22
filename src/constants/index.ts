@@ -21,6 +21,8 @@ export const DEFAULT_TEXT_HEIGHT = 40;
 export const DEFAULT_CUSTOM_WIDTH = 180;
 export const DEFAULT_CUSTOM_HEIGHT = 120;
 export const MIN_ELEMENT_SIZE = 20;
+export const MAX_ELEMENT_SIZE = 5000;
+export const MAX_COORDINATE = 100000;
 
 export const DEFAULTS = {
   backgroundColor: '#ffffff',

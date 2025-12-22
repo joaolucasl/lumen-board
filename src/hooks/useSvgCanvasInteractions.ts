@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import type React from 'react';
 import type { RefObject } from 'react';
 import type { CanvasElement, ElementType, ResizeHandleType, SceneState, Tool } from '../types';
-import { GRID_SIZE, MIN_ELEMENT_SIZE } from '../constants';
+import { GRID_SIZE, MAX_ELEMENT_SIZE, MIN_ELEMENT_SIZE } from '../constants';
 import { createConnectionId, createElementId } from '../utils/ids';
 import { screenToWorldPoint } from '../utils/viewport';
 import { deleteConnectionsForElements, deleteElementsFromMap } from '../utils/scene';
@@ -22,7 +22,7 @@ export type UseSvgCanvasInteractionsArgs = {
 type ResizeDelta = { dx: number; dy: number };
 type ResizeOptions = { snapToGrid: boolean };
 
-const clampSize = (value: number) => Math.max(MIN_ELEMENT_SIZE, value);
+const clampSize = (value: number) => Math.min(Math.max(MIN_ELEMENT_SIZE, value), MAX_ELEMENT_SIZE);
 
 const snapValue = (value: number, enabled: boolean) =>
   enabled ? Math.round(value / GRID_SIZE) * GRID_SIZE : value;
@@ -35,7 +35,7 @@ function computeResize(
 ): { x: number; y: number; width: number; height: number } {
   const { dx, dy } = delta;
   const { snapToGrid } = options;
-  const aspect = initial.width / initial.height || 1;
+  const aspect = initial.height === 0 ? 1 : initial.width / initial.height;
 
   let x = initial.x;
   let y = initial.y;

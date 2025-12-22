@@ -8,11 +8,14 @@ import type {
   InfiniteCanvasRef,
   SceneState,
 } from '../types';
-import { DEFAULTS, MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from '../constants';
+import { DEFAULTS, MAX_ZOOM, MIN_ZOOM, ZOOM_STEP, MAX_COORDINATE, MAX_ELEMENT_SIZE, MIN_ELEMENT_SIZE } from '../constants';
 import { createConnectionId, createElementId } from '../utils/ids';
 import { getDefaultElementSize } from '../utils/elementDefaults';
 import { clampZoom, screenToWorldPoint, worldToScreenPoint } from '../utils/viewport';
 import { deleteConnectionsForElements, deleteElementsFromMap, updateElementsInMap } from '../utils/scene';
+
+const clampCoordinate = (val: number) => Math.min(Math.max(-MAX_COORDINATE, val), MAX_COORDINATE);
+const clampDimension = (val: number) => Math.min(Math.max(MIN_ELEMENT_SIZE, val), MAX_ELEMENT_SIZE);
 
 export type UseInfiniteCanvasApiArgs = {
   sceneRef: MutableRefObject<SceneState>;
@@ -76,10 +79,10 @@ export function useInfiniteCanvasApi({
         const newElement: CanvasElement = {
           id: options.id || createElementId(true),
           type: options.type,
-          x: options.x ?? center.x - (options.width ?? defaults.width) / 2,
-          y: options.y ?? center.y - (options.height ?? defaults.height) / 2,
-          width: options.width ?? defaults.width,
-          height: options.height ?? defaults.height,
+          x: clampCoordinate(options.x ?? center.x - (options.width ?? defaults.width) / 2),
+          y: clampCoordinate(options.y ?? center.y - (options.height ?? defaults.height) / 2),
+          width: clampDimension(options.width ?? defaults.width),
+          height: clampDimension(options.height ?? defaults.height),
           rotation: options.rotation ?? DEFAULTS.rotation,
           opacity: options.opacity ?? DEFAULTS.opacity,
           backgroundColor: options.backgroundColor ?? DEFAULTS.backgroundColor,
@@ -110,10 +113,10 @@ export function useInfiniteCanvasApi({
           return {
             id: options.id || createElementId(true),
             type: options.type,
-            x: options.x ?? center.x - (options.width ?? defaults.width) / 2,
-            y: options.y ?? center.y - (options.height ?? defaults.height) / 2,
-            width: options.width ?? defaults.width,
-            height: options.height ?? defaults.height,
+            x: clampCoordinate(options.x ?? center.x - (options.width ?? defaults.width) / 2),
+            y: clampCoordinate(options.y ?? center.y - (options.height ?? defaults.height) / 2),
+            width: clampDimension(options.width ?? defaults.width),
+            height: clampDimension(options.height ?? defaults.height),
             rotation: options.rotation ?? DEFAULTS.rotation,
             opacity: options.opacity ?? DEFAULTS.opacity,
             backgroundColor: options.backgroundColor ?? DEFAULTS.backgroundColor,
@@ -143,14 +146,19 @@ export function useInfiniteCanvasApi({
         updateScene((prev) => {
           const element = prev.elements[id];
           if (!element) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[LumenBoard] updateElement: Element with id '${id}' not found`);
+            }
             return prev;
           }
           
           // Basic validation/clamping
-          const newWidth = updates.width !== undefined ? Math.max(1, updates.width) : element.width;
-          const newHeight = updates.height !== undefined ? Math.max(1, updates.height) : element.height;
+          const newWidth = updates.width !== undefined ? clampDimension(updates.width) : element.width;
+          const newHeight = updates.height !== undefined ? clampDimension(updates.height) : element.height;
+          const newX = updates.x !== undefined ? clampCoordinate(updates.x) : element.x;
+          const newY = updates.y !== undefined ? clampCoordinate(updates.y) : element.y;
           
-          updatedElement = { ...element, ...updates, width: newWidth, height: newHeight };
+          updatedElement = { ...element, ...updates, x: newX, y: newY, width: newWidth, height: newHeight };
           return {
             ...prev,
             elements: { ...prev.elements, [id]: updatedElement },
@@ -173,7 +181,12 @@ export function useInfiniteCanvasApi({
       },
 
       deleteElement: (id: string) => {
-        if (!sceneRef.current.elements[id]) return false;
+        if (!sceneRef.current.elements[id]) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`[LumenBoard] deleteElement: Element with id '${id}' not found`);
+          }
+          return false;
+        }
 
         updateScene((prev) => {
           const nextElements = deleteElementsFromMap(prev.elements, [id]);
@@ -258,7 +271,12 @@ export function useInfiniteCanvasApi({
 
         updateScene((prev) => {
           const idx = prev.connections.findIndex((c) => c.id === id);
-          if (idx === -1) return prev;
+          if (idx === -1) {
+            if (process.env.NODE_ENV === 'development') {
+              console.warn(`[LumenBoard] updateConnection: Connection with id '${id}' not found`);
+            }
+            return prev;
+          }
 
           updatedConnection = { ...prev.connections[idx], ...updates };
           const newConnections = [...prev.connections];
@@ -272,7 +290,12 @@ export function useInfiniteCanvasApi({
 
       deleteConnection: (id: string) => {
         const exists = sceneRef.current.connections.some(c => c.id === id);
-        if (!exists) return false;
+        if (!exists) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`[LumenBoard] deleteConnection: Connection with id '${id}' not found`);
+          }
+          return false;
+        }
 
         updateScene((prev) => ({
           ...prev,
@@ -344,7 +367,12 @@ export function useInfiniteCanvasApi({
 
       panToElement: (id: string) => {
         const el = sceneRef.current.elements[id];
-        if (!el) return false;
+        if (!el) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`[LumenBoard] panToElement: Element with id '${id}' not found`);
+          }
+          return false;
+        }
 
         const centerX = el.x + el.width / 2;
         const centerY = el.y + el.height / 2;
@@ -397,7 +425,12 @@ export function useInfiniteCanvasApi({
 
       focusElement: (id: string, options = {}) => {
         const el = sceneRef.current.elements[id];
-        if (!el) return false;
+        if (!el) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`[LumenBoard] focusElement: Element with id '${id}' not found`);
+          }
+          return false;
+        }
 
         handleSelection([id]);
 
@@ -443,7 +476,12 @@ export function useInfiniteCanvasApi({
           }
         });
 
-        if (!found) return false;
+        if (!found) {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`[LumenBoard] focusElements: No elements found for ids: ${ids.join(', ')}`);
+          }
+          return false;
+        }
 
         const rect = containerRef.current?.getBoundingClientRect();
         if (!rect) return false;
