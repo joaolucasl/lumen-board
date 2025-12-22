@@ -34,8 +34,10 @@ export function useSvgCanvasInteractions({
   const { view, elements } = scene;
 
   const [dragState, setDragState] = useState<{
-    type: 'pan' | 'element' | 'create' | 'resize';
+    type: 'pan' | 'element' | 'create' | 'resize' | 'marquee';
     startPos: { x: number; y: number };
+    currentPos?: { x: number; y: number };
+    isClick?: boolean;
     initialElements?: Record<string, CanvasElement>;
     targetId?: string;
     resizeHandle?: ResizeHandleType;
@@ -57,6 +59,51 @@ export function useSvgCanvasInteractions({
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
       }
+    };
+  }, []);
+
+  // Handle escape key to cancel drag operations
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && dragState) {
+        // Cancel drag and restore initial positions
+        if (dragState.type === 'element' && dragState.initialElements) {
+          onUpdateScene((s) => ({
+            ...s,
+            elements: dragState.initialElements!,
+          }));
+        }
+        setDragState(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dragState, onUpdateScene]);
+
+  // Track space key state for panning
+  const [isSpacePressed, setIsSpacePressed] = useState(false);
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setIsSpacePressed(true);
+      }
+    };
+    
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        setIsSpacePressed(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
 
@@ -102,12 +149,16 @@ export function useSvgCanvasInteractions({
         if (!selectedIds.includes(connectionId)) {
           onSelect(e.shiftKey ? [...selectedIds, connectionId] : [connectionId]);
         }
-      } else if (activeTool === 'hand' || (activeTool === 'pointer' && !elementId && !connectionId)) {
-        if (activeTool === 'pointer') {
-          onSelect([]);
-        }
-        setDragState({ type: 'pan', startPos: { x: e.clientX, y: e.clientY } });
-      } else if (activeTool === 'pointer' && elementId) {
+      } else if (isSpacePressed || activeTool === 'hand') {
+      // Space+pointer or hand tool pans
+      if (activeTool === 'pointer' && !isSpacePressed) {
+        onSelect([]);
+      }
+      setDragState({ type: 'pan', startPos: { x: e.clientX, y: e.clientY } });
+    } else if (activeTool === 'pointer' && !elementId && !connectionId) {
+      // Pointer tool on empty canvas starts marquee selection
+      setDragState({ type: 'marquee', startPos: worldPos, isClick: true });
+    } else if (activeTool === 'pointer' && elementId) {
         if (!selectedIds.includes(elementId)) {
           onSelect(e.shiftKey ? [...selectedIds, elementId] : [elementId]);
         }
@@ -198,6 +249,7 @@ export function useSvgCanvasInteractions({
     [
       activeTool,
       elements,
+      isSpacePressed,
       keepToolActive,
       onSelect,
       onUpdateScene,
@@ -274,6 +326,17 @@ export function useSvgCanvasInteractions({
               },
             },
           }));
+        } else if (dragState.type === 'marquee') {
+          const worldPos = screenToWorld(event.clientX, event.clientY);
+          // Mark as dragging if we've moved a significant amount
+          const isDragging = Math.abs(worldPos.x - dragState.startPos.x) > 5 || 
+                           Math.abs(worldPos.y - dragState.startPos.y) > 5;
+          // Update marquee bounds and drag state
+          setDragState({ 
+            ...dragState, 
+            currentPos: worldPos, 
+            isClick: dragState.isClick && !isDragging 
+          });
         } else if (dragState.type === 'resize' && dragState.targetId && dragState.resizeHandle && dragState.initialDimensions) {
           const worldPos = screenToWorld(event.clientX, event.clientY);
           const dx = worldPos.x - dragState.startPos.x;
@@ -332,6 +395,35 @@ export function useSvgCanvasInteractions({
         });
       }
 
+      // Handle marquee selection completion
+      if (dragState?.type === 'marquee') {
+        if (dragState.isClick) {
+          // This was a click, not a drag - deselect everything
+          onSelect([]);
+        } else if (dragState.currentPos) {
+          // This was a drag - do marquee selection
+          const minX = Math.min(dragState.startPos.x, dragState.currentPos.x);
+          const minY = Math.min(dragState.startPos.y, dragState.currentPos.y);
+          const maxX = Math.max(dragState.startPos.x, dragState.currentPos.x);
+          const maxY = Math.max(dragState.startPos.y, dragState.currentPos.y);
+
+          // Find elements within the marquee bounds
+          const selectedIds: string[] = [];
+          Object.values(elements).forEach((element) => {
+            const elementRight = element.x + element.width;
+            const elementBottom = element.y + element.height;
+            
+            // Check if element intersects with marquee bounds
+            if (element.x < maxX && elementRight > minX && 
+                element.y < maxY && elementBottom > minY) {
+              selectedIds.push(element.id);
+            }
+          });
+
+          onSelect(selectedIds);
+        }
+      }
+
       setDragState(null);
     },
     [dragState, keepToolActive, onToolChange, onUpdateScene, screenToWorld, snapToGrid]
@@ -342,8 +434,8 @@ export function useSvgCanvasInteractions({
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return;
     
-    // Calculate zoom factor based on wheel direction
-    const zoomFactor = e.deltaY > 0 ? 1 / ZOOM_STEP : ZOOM_STEP;
+    // Fixed zoom factor for consistent zoom behavior
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
     
     // Get mouse position relative to SVG
     const mouseX = e.clientX - rect.left;
@@ -360,7 +452,6 @@ export function useSvgCanvasInteractions({
       const zoomRatio = newZoom / s.view.zoom;
       
       // Adjust view to zoom toward mouse cursor
-      // The formula keeps the point under the mouse cursor in the same screen position
       const newX = mouseX - (mouseX - s.view.x) * zoomRatio;
       const newY = mouseY - (mouseY - s.view.y) * zoomRatio;
       

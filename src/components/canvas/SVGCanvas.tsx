@@ -139,6 +139,21 @@ const SVGCanvas: React.FC<SVGCanvasProps> = ({
             currentPos={pendingConnection.currentPos}
           />
         )}
+
+        {/* Marquee Selection Box */}
+        {dragState?.type === 'marquee' && dragState.currentPos && !dragState.isClick && (
+          <rect
+            x={Math.min(dragState.startPos.x, dragState.currentPos.x)}
+            y={Math.min(dragState.startPos.y, dragState.currentPos.y)}
+            width={Math.abs(dragState.currentPos.x - dragState.startPos.x)}
+            height={Math.abs(dragState.currentPos.y - dragState.startPos.y)}
+            fill="rgba(59, 130, 246, 0.1)"
+            stroke="#3b82f6"
+            strokeWidth={1 / view.zoom}
+            strokeDasharray={`${4 / view.zoom} ${2 / view.zoom}`}
+            pointerEvents="none"
+          />
+        )}
       </g>
     </svg>
   );

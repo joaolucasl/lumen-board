@@ -88,13 +88,24 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (config.readonly) return;
-      if (e.key !== 'Backspace' && e.key !== 'Delete') return;
-
+      
+      // Check if we're in an input field
       const active = document.activeElement as HTMLElement | null;
       if (active) {
         const tag = active.tagName;
         if (tag === 'INPUT' || tag === 'TEXTAREA' || (active as any).isContentEditable) return;
       }
+
+      // Handle Escape key - return to pointer tool and clear selection
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setActiveTool('pointer');
+        handleSelection([]);
+        return;
+      }
+
+      // Handle Delete/Backspace keys - delete selected elements
+      if (e.key !== 'Backspace' && e.key !== 'Delete') return;
 
       const ids = selectedIdsRef.current;
       if (ids.length === 0) return;

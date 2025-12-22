@@ -103,7 +103,7 @@ test.describe('Tool Interactions', () => {
     await expect(rectTool).not.toHaveClass(/active|selected/);
 
     // Switch to pointer tool
-    const pointerTool = component.getByRole('button', { name: 'Select' });
+    const pointerTool = component.getByRole('button', { name: 'Select', exact: true });
     await pointerTool.click();
     await expect(pointerTool).toHaveClass(/active|selected/);
     await expect(ellipseTool).not.toHaveClass(/active|selected/);
@@ -136,7 +136,7 @@ test.describe('Tool Interactions', () => {
     );
 
     // Ensure pointer tool is active
-    const pointerTool = component.getByRole('button', { name: 'Select' });
+    const pointerTool = component.getByRole('button', { name: 'Select', exact: true });
     await pointerTool.click();
 
     // Click element
@@ -254,7 +254,7 @@ test.describe('Tool Interactions', () => {
     await page.waitForTimeout(100);
 
     // Tool should return to pointer
-    const pointerTool = component.getByRole('button', { name: 'Select' });
+    const pointerTool = component.getByRole('button', { name: 'Select', exact: true });
     await expect(pointerTool).toHaveClass(/active|selected/);
     await expect(rectTool).not.toHaveClass(/active|selected/);
   });
@@ -356,7 +356,7 @@ test.describe('Tool Interactions', () => {
     await page.waitForTimeout(100);
 
     // Should return to pointer tool
-    const pointerTool = component.getByRole('button', { name: 'Select' });
+    const pointerTool = component.getByRole('button', { name: 'Select', exact: true });
     await expect(pointerTool).toHaveClass(/active|selected/);
     await expect(rectTool).not.toHaveClass(/active|selected/);
   });
