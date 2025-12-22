@@ -9,6 +9,7 @@ import GridLayer from '../layers/GridLayer';
 import Toolbar from '../ui/Toolbar';
 import PropertiesPanel from '../ui/PropertiesPanel';
 import ZoomControls from '../ui/ZoomControls';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface InfiniteCanvasProps {
   initialData?: SceneState;
@@ -54,9 +55,13 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
 
   // Sync with initialData if provided externally
   useEffect(() => {
-    if (initialData) {
+    let isMounted = true;
+    if (initialData && isMounted) {
       setScene(initialData);
     }
+    return () => {
+      isMounted = false;
+    };
   }, [initialData]);
 
   const updateScene = useCallback((updater: (prev: SceneState) => SceneState) => {
@@ -134,17 +139,37 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
     >
       {config.grid !== false && <GridLayer view={scene.view} />}
       
-      <SVGCanvas 
-        scene={scene}
-        selectedIds={selectedIds}
-        activeTool={activeTool}
-        keepToolActive={keepToolActive}
-        onUpdateScene={updateScene}
-        onSelect={handleSelection}
-        customComponents={components}
-        snapToGrid={config.snapToGrid}
-        onToolChange={setActiveTool}
-      />
+      <ErrorBoundary fallback={
+        <div style={{ 
+          position: 'absolute', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          color: '#ef4444',
+          backgroundColor: '#fef2f2' 
+        }}>
+          <div>
+            <h3>Something went wrong</h3>
+            <p>The canvas encountered an error and cannot be displayed.</p>
+          </div>
+        </div>
+      }>
+        <SVGCanvas 
+          scene={scene}
+          selectedIds={selectedIds}
+          activeTool={activeTool}
+          keepToolActive={keepToolActive}
+          onUpdateScene={updateScene}
+          onSelect={handleSelection}
+          customComponents={components}
+          snapToGrid={config.snapToGrid}
+          onToolChange={setActiveTool}
+        />
+      </ErrorBoundary>
 
       {uiConfig.showToolbar && (
         <Toolbar 

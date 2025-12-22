@@ -188,7 +188,11 @@ export function useSvgCanvasInteractions({
             resizeHandle,
             initialDimensions: { x: el.x, y: el.y, width: el.width, height: el.height },
           });
-          (e.target as Element).setPointerCapture(e.pointerId);
+          try {
+            (e.target as Element).setPointerCapture(e.pointerId);
+          } catch {
+            // Pointer capture may fail if element is removed or pointer is invalid
+          }
           return;
         }
       }
@@ -284,7 +288,11 @@ export function useSvgCanvasInteractions({
         }
       }
 
-      (e.target as Element).setPointerCapture(e.pointerId);
+      try {
+        (e.target as Element).setPointerCapture(e.pointerId);
+      } catch {
+        // Pointer capture may fail if element is removed or pointer is invalid
+      }
     },
     [
       activeTool,

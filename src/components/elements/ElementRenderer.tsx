@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { CanvasElement } from '../../types';
+import { ErrorBoundary } from '../ErrorBoundary';
 
 interface ElementRendererProps {
   element: CanvasElement;
@@ -52,7 +53,9 @@ const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, 
         return (
           <foreignObject x={x} y={y} width={width} height={height} transform={transform} data-element-id={id} style={{ cursor, opacity }}>
             <div className={`lb-element-container ${isSelected ? 'lb-element-container--selected' : ''}`}>
-              <CustomComp width={width} height={height} data={element.props} />
+              <ErrorBoundary>
+                <CustomComp width={width} height={height} data={element.props} />
+              </ErrorBoundary>
             </div>
           </foreignObject>
         );
