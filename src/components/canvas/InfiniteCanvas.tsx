@@ -67,21 +67,23 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
   }, [initialData]);
 
   const updateScene = useCallback((updater: (prev: SceneState) => SceneState) => {
-    let nextScene: SceneState;
     setScene((prev) => {
-      nextScene = updater(prev);
+      const nextScene = updater(prev);
       return nextScene;
     });
-    // Note: onChange is called with the new state, but due to React's batching,
-    // the state may not be immediately available via ref after this call
-    onChange?.(nextScene!);
-    return nextScene!;
-  }, [onChange]);
+    // Note: onChange is called via useEffect to ensure we have the latest state
+    return scene; // Return current scene for immediate use
+  }, []);
 
   const handleSelection = useCallback((ids: string[]) => {
     setSelectedIds(ids);
     onSelectionChange?.(ids);
   }, [onSelectionChange]);
+
+  // Call onChange whenever scene changes
+  useEffect(() => {
+    onChange?.(scene);
+  }, [scene, onChange]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
