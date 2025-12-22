@@ -35,3 +35,4 @@ playwright-report
 *.sw?
 
 .windsurf
+.cache/
