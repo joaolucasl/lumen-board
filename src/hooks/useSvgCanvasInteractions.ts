@@ -2,7 +2,7 @@ import { useCallback, useState, useRef, useEffect } from 'react';
 import type React from 'react';
 import type { RefObject } from 'react';
 import type { CanvasElement, ElementType, ResizeHandleType, SceneState, Tool } from '../types';
-import { GRID_SIZE } from '../constants';
+import { GRID_SIZE, MIN_ZOOM, MAX_ZOOM, ZOOM_STEP } from '../constants';
 import { createConnectionId, createElementId } from '../utils/ids';
 import { screenToWorldPoint } from '../utils/viewport';
 import { deleteConnectionsForElements, deleteElementsFromMap } from '../utils/scene';
@@ -339,7 +339,34 @@ export function useSvgCanvasInteractions({
 
   const handleWheel = useCallback((e: React.WheelEvent) => {
     e.preventDefault();
-  }, []);
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    // Calculate zoom factor based on wheel direction
+    const zoomFactor = e.deltaY > 0 ? 1 / ZOOM_STEP : ZOOM_STEP;
+    
+    // Get mouse position relative to SVG
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    onUpdateScene((s) => {
+      // Calculate new zoom level with clamping
+      const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, s.view.zoom * zoomFactor));
+      
+      // If zoom didn't change (at limits), return early
+      if (newZoom === s.view.zoom) return s;
+      
+      // Calculate zoom ratio for focal point adjustment
+      const zoomRatio = newZoom / s.view.zoom;
+      
+      // Adjust view to zoom toward mouse cursor
+      // The formula keeps the point under the mouse cursor in the same screen position
+      const newX = mouseX - (mouseX - s.view.x) * zoomRatio;
+      const newY = mouseY - (mouseY - s.view.y) * zoomRatio;
+      
+      return { ...s, view: { x: newX, y: newY, zoom: newZoom } };
+    });
+  }, [svgRef, onUpdateScene]);
 
   return {
     dragState,

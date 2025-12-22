@@ -15,6 +15,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({ zoom, onZoomIn, onZoomOut, 
       <button 
         onClick={onZoomOut}
         className="lb-zoom-button"
+        aria-label="Zoom out"
       >
         <Icons.Minus width={12} height={12} />
       </button>
@@ -24,6 +25,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({ zoom, onZoomIn, onZoomOut, 
       <button 
         onClick={onZoomIn}
         className="lb-zoom-button"
+        aria-label="Zoom in"
       >
         <Icons.Plus width={12} height={12} />
       </button>
@@ -31,6 +33,7 @@ const ZoomControls: React.FC<ZoomControlsProps> = ({ zoom, onZoomIn, onZoomOut, 
       <button 
         onClick={onFitView}
         className="lb-fit-button"
+        aria-label="Fit view"
       >
         Fit View
       </button>
