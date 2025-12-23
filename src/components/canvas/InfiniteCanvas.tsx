@@ -133,8 +133,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeTool, setActiveTool] = useState<Tool>('pointer');
-  // Removed internal keepToolActive state, now derived from config
-  const keepToolActive = config.keepToolActive ?? false;
+  const [keepToolActive, setKeepToolActive] = useState(config.keepToolActive ?? false);
 
   // Keep refs in sync for imperative API methods that need current values
   const sceneRef = useRef<SceneState>(scene);
@@ -278,8 +277,7 @@ const InfiniteCanvas = forwardRef<InfiniteCanvasRef, InfiniteCanvasProps>((props
           activeTool={activeTool} 
           onToolSelect={setActiveTool} 
           keepToolActive={keepToolActive}
-          // Removing internal toggle for now as it's controlled via config
-          onToggleKeepToolActive={() => {}}
+          onToggleKeepToolActive={() => setKeepToolActive(!keepToolActive)}
         />
       )}
 
