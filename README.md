@@ -1,8 +1,17 @@
+<div align="center">
+
+![LumenBoard Logo](logo.png)
+
 # LumenBoard
 
 **A lightweight, zero-dependency infinite canvas component for React.**
 
 Build interactive whiteboards, flowcharts, diagrams, and visual editors with a simple, declarative API.
+
+[![npm version](https://badge.fury.io/js/lumen-board.svg)](https://badge.fury.io/js/lumen-board)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+</div>
 
 ---
 
