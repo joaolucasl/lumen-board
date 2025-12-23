@@ -78,11 +78,14 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ elements, onUpdate })
 
         {/* Layer Controls */}
         <div className="lb-panel-footer">
-           <button className="lb-text-button">
-             <div className="lb-icon-mr"><Icons.Layers width={14} height={14} /></div> Bring Forward
-           </button>
-           <button className="lb-text-button">
-             <div className="lb-icon-mr"><Icons.Lock width={12} height={12} /></div> Lock
+           <button 
+             className={`lb-text-button ${first.locked ? 'locked' : ''}`}
+             onClick={() => onUpdate({ locked: !first.locked })}
+           >
+             <div className="lb-icon-mr">
+               {first.locked ? <Icons.Unlock width={12} height={12} /> : <Icons.Lock width={12} height={12} />}
+             </div> 
+             {first.locked ? 'Unlock' : 'Lock'}
            </button>
         </div>
       </div>
