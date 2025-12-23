@@ -75,12 +75,23 @@ const App: React.FC = () => {
 
   const updateSelected = () => {
     const selectedIds = canvasRef.current?.getSelectedIds();
+    const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+    
+    // stroke color is randomColor but darker
+    const strokeColor = '#' + randomColor.slice(1).match(/.{2}/g)
+    .map(hex => {
+        const value = parseInt(hex, 16);
+        return Math.floor(value * 0.6).toString(16).padStart(2, '0');
+    }).join('');
+ 
     if (selectedIds && selectedIds.length > 0) {
-      const updated = canvasRef.current?.updateElement(selectedIds[0], {
-        backgroundColor: '#fbbf24',
-        rotation: 45
-      });
-      setLastAction(`Updated element: ${updated?.id}`);
+      for (const id of selectedIds) {
+        const updated = canvasRef.current?.updateElement(id, {
+          backgroundColor: randomColor,
+          strokeColor: strokeColor,
+        });
+        setLastAction(`Updated element: ${updated?.id}`)
+      }
     } else {
       setLastAction('No element selected');
     }
