@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -19,9 +20,11 @@ const copyCssPlugin = () => ({
 export default defineConfig(({ mode }) => {
   const _env = loadEnv(mode, '.', '');
   const isLibBuild = mode === 'lib';
+  const isProduction = process.env.NODE_ENV === 'production';
 
   return {
     root: isLibBuild ? '.' : 'demo',
+    base: isLibBuild ? '/' : isProduction ? '/lumen-board/' : '/',
     server: {
       port: 3000,
       host: '0.0.0.0',
