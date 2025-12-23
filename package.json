@@ -8,6 +8,10 @@
   "style": "./dist/lumen-board.css",
   "license": "MIT",
   "author": "João Lucas Lucchetta",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joaolucasl/lumen-board.git"
+  },
   "homepage": "https://github.com/joaolucasl/lumen-board",
   "exports": {
     ".": {

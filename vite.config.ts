@@ -37,7 +37,7 @@ export default defineConfig(({ mode }) => {
       react(),
       isLibBuild && dts({ 
         include: ['src'],
-        exclude: ['src/**/*.test.ts', 'src/**/__tests__/**'],
+        exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/__tests__/**'],
         outDir: 'dist',
       }),
       isLibBuild && copyCssPlugin(),
