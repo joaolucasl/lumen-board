@@ -117,4 +117,4 @@ jobs:
 
       - name: Publish to npm
         if: steps.version_check.outputs.changed == 'true'
-        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance
+        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance --tag ${{ steps.version_check.outputs.dist_tag }}
