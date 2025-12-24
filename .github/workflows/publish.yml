@@ -82,9 +82,9 @@ jobs:
 
       - name: Setup Node.js
         if: steps.version_check.outputs.changed == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
@@ -115,9 +115,6 @@ jobs:
           draft: false
           prerelease: ${{ steps.version_check.outputs.prerelease }}
 
-      - name: Clear auth token for OIDC
-        run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
-
       - name: Publish to npm
         if: steps.version_check.outputs.changed == 'true'
-        run: npm publish
+        run: NODE_AUTH_TOKEN="" npm publish --access public --provenance
