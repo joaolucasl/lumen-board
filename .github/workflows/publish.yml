@@ -1,83 +1,123 @@
-name: Publish Package to npm
+name: Release & Publish
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
-  publish:
-    name: Publish npm package
+  release_and_publish:
+    name: Create GitHub release and publish to npm
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Derive release metadata
-        id: release_meta
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-        shell: bash
+      - name: Detect version change
+        id: version_check
         run: |
-          if [[ -z "$RELEASE_TAG" ]]; then
-            echo "Release tag could not be determined."
-            exit 1
+          set -eo pipefail
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          BASE_SHA="${{ github.event.before }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+          PREV_VERSION=""
+
+          if [[ -n "$BASE_SHA" && "$BASE_SHA" != "$ZERO_SHA" ]]; then
+            if git cat-file -e "$BASE_SHA":package.json 2>/dev/null; then
+              PREV_VERSION=$(git show "$BASE_SHA":package.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('version',''), end='')" 2>/dev/null || true)
+            fi
           fi
 
-          VERSION="${RELEASE_TAG#v}"
+          echo "current=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "previous=$PREV_VERSION" >> "$GITHUB_OUTPUT"
 
-          if [[ -z "$VERSION" ]]; then
-            echo "Release tag must follow the pattern v<semver> (e.g. v1.2.3)."
-            exit 1
+          if [[ "$CURRENT_VERSION" == "$PREV_VERSION" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "dist_tag=" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
 
           DIST_TAG="latest"
-          if [[ "$VERSION" == *"-"* ]]; then
-            SUFFIX="${VERSION#*-}"
+          PRERELEASE="false"
+
+          if [[ "$CURRENT_VERSION" == *"-"* ]]; then
+            SUFFIX="${CURRENT_VERSION#*-}"
             DIST_TAG="${SUFFIX%%.*}"
+            PRERELEASE="true"
           fi
 
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
           echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Skip release (version unchanged)
+        if: steps.version_check.outputs.changed != 'true'
+        run: echo "package.json version unchanged on main; skipping release & publish."
+
+      - name: Ensure tag does not already exist
+        if: steps.version_check.outputs.changed == 'true'
+        env:
+          RELEASE_TAG: v${{ steps.version_check.outputs.current }}
+        run: |
+          set -e
+          if git rev-parse -q --verify "refs/tags/$RELEASE_TAG" >/dev/null; then
+            echo "Tag $RELEASE_TAG already exists."
+            exit 1
+          fi
 
       - name: Setup pnpm
+        if: steps.version_check.outputs.changed == 'true'
         uses: pnpm/action-setup@v3
         with:
           version: latest
           run_install: false
 
       - name: Setup Node.js
+        if: steps.version_check.outputs.changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
-      - name: Verify package version matches release tag
-        env:
-          RELEASE_VERSION: ${{ steps.release_meta.outputs.version }}
-        run: |
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          if [[ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]]; then
-            echo "package.json version ($PACKAGE_VERSION) does not match release tag ($RELEASE_VERSION)."
-            exit 1
-          fi
-
       - name: Install dependencies
+        if: steps.version_check.outputs.changed == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build package
+        if: steps.version_check.outputs.changed == 'true'
         run: pnpm build
 
-      - name: Run tests
+      - name: Run unit tests
+        if: steps.version_check.outputs.changed == 'true'
         run: pnpm test:unit
 
-      - name: Publish to npm (trusted publisher)
+      - name: Create GitHub release
+        if: steps.version_check.outputs.changed == 'true'
+        uses: actions/create-release@v1
         env:
-          DIST_TAG: ${{ steps.release_meta.outputs.dist_tag }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version_check.outputs.current }}
+          release_name: v${{ steps.version_check.outputs.current }}
+          body: |
+            Automated release for version v${{ steps.version_check.outputs.current }}.
+
+            Commit: ${{ github.sha }}
+          draft: false
+          prerelease: ${{ steps.version_check.outputs.prerelease }}
+
+      - name: Publish to npm (trusted publisher)
+        if: steps.version_check.outputs.changed == 'true'
+        env:
+          DIST_TAG: ${{ steps.version_check.outputs.dist_tag }}
         run: |
           npm publish --provenance --tag "${DIST_TAG:-latest}"
