@@ -1,0 +1,82 @@
+name: Publish Package to npm
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish npm package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Derive release metadata
+        id: release_meta
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        shell: bash
+        run: |
+          if [[ -z "$RELEASE_TAG" ]]; then
+            echo "Release tag could not be determined."
+            exit 1
+          fi
+
+          VERSION="${RELEASE_TAG#v}"
+
+          if [[ -z "$VERSION" ]]; then
+            echo "Release tag must follow the pattern v<semver> (e.g. v1.2.3)."
+            exit 1
+          fi
+
+          DIST_TAG="latest"
+          if [[ "$VERSION" == *"-"* ]]; then
+            SUFFIX="${VERSION#*-}"
+            DIST_TAG="${SUFFIX%%.*}"
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$DIST_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: latest
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Verify package version matches release tag
+        env:
+          RELEASE_VERSION: ${{ steps.release_meta.outputs.version }}
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          if [[ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]]; then
+            echo "package.json version ($PACKAGE_VERSION) does not match release tag ($RELEASE_VERSION)."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
+        run: pnpm build
+
+      - name: Run tests
+        run: pnpm test:unit
+
+      - name: Publish to npm (trusted publisher)
+        env:
+          DIST_TAG: ${{ steps.release_meta.outputs.dist_tag }}
+        run: |
+          npm publish --provenance --tag "${DIST_TAG:-latest}"

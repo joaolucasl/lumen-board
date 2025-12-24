@@ -1,0 +1,81 @@
+name: Create GitHub Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create GitHub release (on version bump)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect version change
+        id: version_check
+        run: |
+          set -eo pipefail
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          BASE_SHA="${{ github.event.before }}"
+          ZERO_SHA="0000000000000000000000000000000000000000"
+          PREV_VERSION=""
+
+          if [[ -n "$BASE_SHA" && "$BASE_SHA" != "$ZERO_SHA" ]]; then
+            if git cat-file -e "$BASE_SHA":package.json 2>/dev/null; then
+              PREV_VERSION=$(git show "$BASE_SHA":package.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('version',''), end='')" 2>/dev/null || true)
+            fi
+          fi
+
+          echo "current=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "previous=$PREV_VERSION" >> "$GITHUB_OUTPUT"
+
+          if [[ "$CURRENT_VERSION" == "$PREV_VERSION" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PRERELEASE="false"
+          if [[ "$CURRENT_VERSION" == *"-"* ]]; then
+            PRERELEASE="true"
+          fi
+
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Skip release (version unchanged)
+        if: steps.version_check.outputs.changed != 'true'
+        run: echo "package.json version unchanged on main; skipping GitHub Release creation."
+
+      - name: Ensure tag does not already exist
+        if: steps.version_check.outputs.changed == 'true'
+        env:
+          RELEASE_TAG: v${{ steps.version_check.outputs.current }}
+        run: |
+          set -e
+          if git rev-parse -q --verify "refs/tags/$RELEASE_TAG" >/dev/null; then
+            echo "Tag $RELEASE_TAG already exists."
+            exit 1
+          fi
+
+      - name: Create GitHub release
+        if: steps.version_check.outputs.changed == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.version_check.outputs.current }}
+          release_name: v${{ steps.version_check.outputs.current }}
+          body: |
+            Automated release for version v${{ steps.version_check.outputs.current }}.
+
+            Commit: ${{ github.sha }}
+          draft: false
+          prerelease: ${{ steps.version_check.outputs.prerelease }}
