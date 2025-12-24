@@ -115,9 +115,9 @@ jobs:
           draft: false
           prerelease: ${{ steps.version_check.outputs.prerelease }}
 
-      - name: Publish to npm (trusted publisher)
+      - name: Clear auth token for OIDC
+        run: echo "NODE_AUTH_TOKEN=" >> $GITHUB_ENV
+
+      - name: Publish to npm
         if: steps.version_check.outputs.changed == 'true'
-        env:
-          DIST_TAG: ${{ steps.version_check.outputs.dist_tag }}
-        run: |
-          npm publish --provenance --tag "${DIST_TAG:-latest}"
+        run: npm publish
