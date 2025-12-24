@@ -310,6 +310,48 @@ canvasRef.current?.createElement({
 
 Custom components receive `width`, `height`, and `data` (your `props` object) as props.
 
+#### Interactive Elements in Custom Components
+
+When your custom component contains interactive elements (buttons, inputs, links), you may want clicks on those elements to not trigger element selection. Use the `data-lumen-no-select` attribute:
+
+```tsx
+const InteractiveCard: React.FC<{ width: number; height: number; data: any }> = ({
+  width,
+  height,
+  data,
+}) => (
+  <div style={{ padding: 16, background: '#fff', height: '100%' }}>
+    <h3>{data?.name || 'User'}</h3>
+    
+    {/* This button won't select the element when clicked */}
+    <button 
+      data-lumen-no-select
+      onClick={() => alert('Button clicked!')}
+      style={{ padding: '8px 16px' }}
+    >
+      Action
+    </button>
+    
+    {/* This input also won't trigger selection */}
+    <input 
+      data-lumen-no-select
+      type="text"
+      placeholder="Type here..."
+    />
+    
+    {/* Clicking this text WILL select the element */}
+    <p onClick={() => console.log('This selects the element')}>
+      Click me to select the card
+    </p>
+  </div>
+);
+```
+
+- Add `data-lumen-no-select` to any interactive element that shouldn't trigger selection
+- The element remains selectable when clicking on other parts of the component
+- The interactive element's native behavior (onClick, onChange, etc.) still works normally
+- This works with any HTML element (buttons, inputs, anchors, divs, etc.)
+
 ### 4. Read-Only Mode
 
 Display a canvas that users can pan and zoom but not edit:

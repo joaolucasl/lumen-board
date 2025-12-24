@@ -125,6 +125,17 @@ export function useSvgCanvasInteractions({
       const resizeHandle = target.closest('[data-resize-handle]')?.getAttribute('data-resize-handle') as ResizeHandleType | null;
       const resizeTargetId = target.closest('[data-resize-target]')?.getAttribute('data-resize-target');
 
+      // Check if click is on a no-select zone
+      const noSelectElement = target.closest('[data-lumen-no-select]');
+      const elementContainer = target.closest('[data-element-id]');
+      
+      // If no-select element exists and is inside (or is) the element container, skip selection
+      const shouldSkipSelection = noSelectElement && 
+        (noSelectElement === elementContainer || elementContainer?.contains(noSelectElement));
+      
+      // If we should skip selection, set elementId to null
+      const finalElementId = shouldSkipSelection ? null : elementId;
+
       if (activeTool === 'pointer' && resizeHandle && resizeTargetId) {
         const el = elements[resizeTargetId];
         if (el && !el.locked) {
@@ -145,7 +156,7 @@ export function useSvgCanvasInteractions({
         }
       }
 
-      if (activeTool === 'pointer' && !elementId && connectionId) {
+      if (activeTool === 'pointer' && !finalElementId && connectionId) {
         if (!selectedIds.includes(connectionId)) {
           onSelect(e.shiftKey ? [...selectedIds, connectionId] : [connectionId]);
         }
@@ -155,15 +166,15 @@ export function useSvgCanvasInteractions({
         onSelect([]);
       }
       setDragState({ type: 'pan', startPos: { x: e.clientX, y: e.clientY } });
-    } else if (activeTool === 'pointer' && !elementId && !connectionId) {
+    } else if (activeTool === 'pointer' && !finalElementId && !connectionId) {
       // Pointer tool on empty canvas starts marquee selection
       setDragState({ type: 'marquee', startPos: worldPos, isClick: true });
-    } else if (activeTool === 'pointer' && elementId) {
-        if (!selectedIds.includes(elementId)) {
-          onSelect(e.shiftKey ? [...selectedIds, elementId] : [elementId]);
+    } else if (activeTool === 'pointer' && finalElementId) {
+        if (!selectedIds.includes(finalElementId)) {
+          onSelect(e.shiftKey ? [...selectedIds, finalElementId] : [finalElementId]);
         }
         // Only start drag if element is not locked
-        const element = elements[elementId];
+        const element = elements[finalElementId];
         if (!element?.locked) {
           setDragState({
             type: 'element',
@@ -193,9 +204,9 @@ export function useSvgCanvasInteractions({
         onSelect([id]);
         setDragState({ type: 'create', startPos: worldPos, targetId: id });
       } else if (activeTool === 'connection') {
-        if (elementId) {
+        if (finalElementId) {
           if (pendingConnection) {
-            if (elementId !== pendingConnection.sourceId) {
+            if (finalElementId !== pendingConnection.sourceId) {
               const id = createConnectionId(false);
               onUpdateScene((s) => ({
                 ...s,
@@ -216,20 +227,20 @@ export function useSvgCanvasInteractions({
             }
             setPendingConnection(null);
           } else {
-            setPendingConnection({ sourceId: elementId, currentPos: worldPos });
+            setPendingConnection({ sourceId: finalElementId, currentPos: worldPos });
           }
         } else {
           setPendingConnection(null);
         }
         return;
-      } else if (activeTool === 'eraser' && (elementId || connectionId)) {
-        if (elementId) {
+      } else if (activeTool === 'eraser' && (finalElementId || connectionId)) {
+        if (finalElementId) {
           onUpdateScene((s) => {
-            const newElements = deleteElementsFromMap(s.elements, [elementId]);
+            const newElements = deleteElementsFromMap(s.elements, [finalElementId]);
             return {
               ...s,
               elements: newElements,
-              connections: deleteConnectionsForElements(s.connections, [elementId]),
+              connections: deleteConnectionsForElements(s.connections, [finalElementId]),
             };
           });
         } else if (connectionId) {
